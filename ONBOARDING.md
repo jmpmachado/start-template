@@ -9,15 +9,27 @@
 
 ### What you need
 
+**Node.js tooling (governance, lint, tests):**
+
 | Tool | Minimum Version | Check Command |
 | :--- | :--- | :--- |
 | Node.js | v24+ | `node --version` |
 | npm | v10+ (bundled with Node) | `npm --version` |
 | Git | 2.40+ | `git --version` |
-| Editor | Any with TypeScript support (VS Code recommended) | — |
+| Editor | VS Code recommended | — |
 
-> **Docker** is required to run integration tests locally. Install Docker Desktop, then use `docker compose -f infra/docker-compose.yml up -d` to start local services. See §6 Integration Test Bootstrap for details.
-> If your stack differs from Node.js, replace the table above with your runtime's prerequisites.
+**Backend (.NET 8/9):**
+
+| Tool | Minimum Version | Check Command | Install |
+| :--- | :--- | :--- | :--- |
+| .NET 8 SDK | 8.0.x LTS | `dotnet --version` | See [DOTNET_SETUP.md](DOTNET_SETUP.md) §2 |
+| VS2022 Build Tools | 17.8+ | `msbuild -version` | See [DOTNET_SETUP.md](DOTNET_SETUP.md) §1 |
+
+> **VS2022 already installed?** You only need the standalone .NET 8 SDK:
+> ```powershell
+> winget install --id Microsoft.DotNet.SDK.8
+> ```
+> See [DOTNET_SETUP.md §2](DOTNET_SETUP.md) for full options (winget / manual download / VS Installer).
 
 ### Recommended editor setup
 
@@ -64,17 +76,23 @@ npm run dev
 [project-name]/
 ├── .agent/context/       # Engineering knowledge base (docs for agents + humans)
 ├── .github/workflows/    # CI/CD pipeline definitions
-├── infra/                # Infrastructure scripts and IaC
+├── infra/                # Infrastructure scripts
 ├── rfcs/                 # Design Docs and Architecture Decision Records
-├── infra/scripts/        # Developer utility and load test scripts
-├── src/                  # Application source code
-│   ├── [domain/]         # Core business logic (no framework dependencies)
-│   ├── [application/]    # Use cases and orchestration
-│   ├── [infrastructure/] # External adapters (DB, cache, APIs)
-│   └── [interface/]      # Controllers, DTOs, validators
-└── tests/                # Test suites
-    ├── unit/
-    └── integration/
+├── src/
+│   ├── frontend/         # HTML5 + CSS + JS (open index.html in browser)
+│   │   ├── index.html
+│   │   ├── style.css
+│   │   └── app.js
+│   └── backend/          # .NET 8/9 Minimal API
+│       ├── Program.cs
+│       ├── backend.csproj
+│       └── appsettings.json
+└── tests/
+    ├── unit/             # Node.js vitest tests (governance)
+    ├── integration/      # Node.js integration tests
+    └── backend/          # .NET xUnit tests
+        ├── ApiTests.cs
+        └── backend.tests.csproj
 ```
 
 ---
@@ -134,10 +152,12 @@ See [CONTRIBUTING.md §2](CONTRIBUTING.md) for the canonical type list and rules
 
 | Command                      | What it runs                                   |
 | :--------------------------- | :--------------------------------------------- |
-| `npm test`                   | Full test suite (unit + integration)           |
+| `npm test`                   | Full Node.js test suite (unit + integration)   |
 | `npm run test:watch`         | Unit tests in watch mode                       |
-| `npm run test:integration`   | Integration tests — requires local services (see bootstrap below) |
 | `npm run test:coverage`      | Coverage report                                |
+| `dotnet test tests/backend/backend.tests.csproj` | .NET xUnit backend tests |
+| `dotnet build src/backend/backend.csproj` | Build the backend          |
+| `dotnet run --project src/backend/backend.csproj` | Run the API locally on `https://localhost:5001` |
 
 **Coverage targets:** ≥ [80]% statements, ≥ [70]% branches.
 A PR that drops coverage below the target requires explicit approval.
@@ -171,7 +191,7 @@ docker compose -f infra/docker-compose.yml down
 | `DATABASE_URL` | `postgres://appuser:localdevpassword@localhost:5432/appdb` | Primary DB connection |
 | `REDIS_URL` | `redis://localhost:6379` | Cache connection |
 
-> Docker must be installed. See `infra/docker-compose.yml` for service definitions, port mappings, and healthcheck configuration. All credentials in `docker-compose.yml` are for local development only — never use them in staging or production.
+> See [DOTNET_SETUP.md §5](DOTNET_SETUP.md) for .NET-specific troubleshooting (PATH issues, SDK mismatch, port conflicts).
 
 ---
 

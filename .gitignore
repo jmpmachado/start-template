@@ -84,3 +84,13 @@ placeholder_findings.txt
 # Generated TypeScript declarations
 scripts/detect-stack.d.ts
 scripts/lib/agile-config.d.ts
+
+# .NET build artifacts
+bin/
+obj/
+*.user
+*.suo
+.vs/
+*.nupkg
+TestResults/
+

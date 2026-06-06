@@ -45,6 +45,7 @@ This index guides AI agents and engineers through the modular template knowledge
 * **[ONBOARDING.md](ONBOARDING.md)**: Workspace setup guide, environment requirements, and first-day engineering checklist. — **[Core]**
 * **[CONTRIBUTING.md](CONTRIBUTING.md)**: Branch naming rules, commit message guidelines, pull request checklist, and code review flows. — **[Core]**
 * **[START_HERE.md](START_HERE.md)**: 5-step path from clone to first sprint. — **[Core]**
+* **[DOTNET_SETUP.md](DOTNET_SETUP.md)**: .NET 8/9 SDK and VS2022 Build Tools setup � decision matrix (VS2022 already installed vs fresh machine vs CI agent), silent install commands, backend verification, troubleshooting. � **[Core]**
 * **[.agent/context/DEFINITION_OF_DONE.md](.agent/context/DEFINITION_OF_DONE.md)**: Checklist defining requirements for feature release (tests, lint, security, docs). — **[Core]**
 
 ### 6. Operations & Runbooks
