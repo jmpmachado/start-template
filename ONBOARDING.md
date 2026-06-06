@@ -22,12 +22,12 @@
 
 | Tool | Minimum Version | Check Command | Install |
 | :--- | :--- | :--- | :--- |
-| .NET 8 SDK | 8.0.x LTS | `dotnet --version` | See [DOTNET_SETUP.md](DOTNET_SETUP.md) §2 |
+| .NET 9 SDK | 9.0.x | `dotnet --version` | See [DOTNET_SETUP.md](DOTNET_SETUP.md) §2 |
 | VS2022 Build Tools | 17.8+ | `msbuild -version` | See [DOTNET_SETUP.md](DOTNET_SETUP.md) §1 |
 
-> **VS2022 already installed?** You only need the standalone .NET 8 SDK:
+> **VS2022 already installed?** You only need the standalone .NET 9 SDK:
 > ```powershell
-> winget install --id Microsoft.DotNet.SDK.8
+> winget install --id Microsoft.DotNet.SDK.9
 > ```
 > See [DOTNET_SETUP.md §2](DOTNET_SETUP.md) for full options (winget / manual download / VS Installer).
 
