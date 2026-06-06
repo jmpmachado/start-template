@@ -94,3 +94,8 @@ obj/
 *.nupkg
 TestResults/
 
+
+# External toolkits — not template deliverables (see docs/UTILS_ADDENDUM.md)
+utils/
+docs/utils/
+
