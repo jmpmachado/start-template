@@ -75,7 +75,7 @@ Controls which per-language CI workflow is activated by `ci-matrix.yml`.
 **Default:** `node` (assumed when absent or unset).
 
 ```env
-PROJECT_STACK=node
+PROJECT_STACK=multi
 ```
 
 ## Other flags (add as needed)

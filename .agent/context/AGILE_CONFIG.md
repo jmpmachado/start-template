@@ -35,8 +35,8 @@ Answer these questions to calibrate your defaults. The answers drive §2–§4.
 
 > How many independent modules does this monorepo have?
 
-**Active modules:** 1  
-**Modules under active development this sprint:** 1
+**Active modules:** 2 (`frontend`, `backend`)  
+**Modules under active development this sprint:** 2
 
 **Rule from `AGILE_GUIDE.md`:** A sprint touches at most 1 module simultaneously.  
 
@@ -104,7 +104,8 @@ One row per module. Update maturity tier at each sprint retrospective.
 
 | Module | Path | Maturity Tier | Release cadence | Branch policy | Notes |
 |---|---|---|---|---|---|
-| start-project | `.` | 2 | Continuous | main | Core project module |
+| frontend | `src/frontend/` | 1 | Continuous | main | HTML5 + CSS + JS scaffold |
+| backend  | `src/backend/`  | 1 | Continuous | main | .NET 8/9 Minimal API scaffold |
 
 **Maturity tier definitions:** See `AGILE_GUIDE.md §4.1`
 
@@ -123,13 +124,15 @@ Fill with your targets. Measure actuals at each sprint retrospective.
 
 | Module | Deploy Frequency target | Lead Time target | Change Failure Rate target | MTTR target |
 |---|---|---|---|---|
-| start-project | Continuous | < 1 day | < 10% | < 1 hour |
+| frontend | Continuous | < 1 day | < 10% | < 1 hour |
+| backend  | Continuous | < 1 day | < 10% | < 1 hour |
 
 **Sprint retrospective — actuals log:**
 
 | Sprint | Module | Deploy Freq | Lead Time | CFR | MTTR | Action taken |
 |---|---|---|---|---|---|---|
-| Sprint 01 | start-project | Continuous | < 1 day | 0% | < 1 hour | Initial setup retrospect |
+| Sprint 01 | frontend | Continuous | < 1 day | 0% | < 1 hour | Scaffold created — multi-stack setup |
+| Sprint 01 | backend  | Continuous | < 1 day | 0% | < 1 hour | Scaffold created — multi-stack setup |
 
 ---
 
@@ -139,23 +142,25 @@ Fill with your targets. Measure actuals at each sprint retrospective.
 
 **Sprint ID:** `QX-01`  
 **Sprint dates:** `2026-06-06` → `2026-06-13`  
-**Module(s) in scope:** `.` (Core template setup)  
-**Sprint goal:** Adopt start-template for a new project and verify test suite.
+**Module(s) in scope:** `frontend`, `backend`  
+**Sprint goal:** Bootstrap multi-stack template (HTML5/CSS/JS + .NET 8/9 Minimal API) with governance, tests, and CI gates.
 
 ### Active USs
 
 | ID | Title | Size | Points | Status | Branch |
 |---|---|---|---|---|---|
 | QX01-01 | Set up initial template configuration | S | 2 | ✅ Done | main |
-| QX01-02 | Verify and execute tests successfully | S | 2 | ✅ Done | main |
+| QX01-02 | Create HTML5+CSS+JS frontend scaffold | S | 2 | ✅ Done | main |
+| QX01-03 | Create .NET 8/9 Minimal API backend scaffold | M | 3 | ✅ Done | main |
+| QX01-04 | Verify test suite and drift check pass | S | 2 | ✅ Done | main |
 
 ### Sprint Capacity Check
 
 | Metric | Limit | Current | Status |
 |---|---|---|---|
-| USs | 5 | 2 | ✅ |
-| Points | 20 | 4 | ✅ |
-| Modules | 1 | 1 | ✅ |
+| USs | 5 | 4 | ✅ |
+| Points | 20 | 9 | ✅ |
+| Modules | 2 | 2 | ✅ |
 
 ---
 
