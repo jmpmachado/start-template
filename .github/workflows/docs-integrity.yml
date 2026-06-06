@@ -1,0 +1,47 @@
+name: Documentation Integrity Guard
+
+on:
+  push:
+    branches: ["**"]
+    paths:
+      - '.agent/context/**'
+      - 'AGENTS.md'
+      - 'tests/unit/documentation.test.ts'
+      - 'CLAUDE.md'
+      - 'GEMINI.md'
+      - '.github/copilot-instructions.md'
+  pull_request:
+    branches: [main, master]
+    paths:
+      - '.agent/context/**'
+      - 'AGENTS.md'
+      - 'tests/unit/documentation.test.ts'
+      - 'CLAUDE.md'
+      - 'GEMINI.md'
+      - '.github/copilot-instructions.md'
+
+jobs:
+  docs-integrity:
+    name: AGENTS.md Bidirectional Consistency
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Use Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: "npm"
+          cache-dependency-path: tooling/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: tooling
+
+      - name: Verify AGENTS.md integrity
+        run: npx vitest run ../tests/unit/documentation.test.ts
+        working-directory: tooling
+
+      - name: Markdown lint
+        run: npm run lint:md

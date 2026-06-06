@@ -1,0 +1,113 @@
+# OWNERS — Repository Ownership Map
+#
+# This file defines who owns which areas of the repository.
+# Owners are responsible for reviewing changes in their areas,
+# keeping documentation current, and being the first escalation point
+# for incidents or questions affecting their domain.
+#
+# Format:
+#   [area]
+#   owners: @handle1, @handle2
+#   escalation: @lead-handle
+#   scope: brief description
+#
+# Rules:
+#   - Every directory with significant logic must have at least one owner.
+#   - An owner must acknowledge changes to their area within 1 business day.
+#   - When the primary owner is unavailable, the escalation contact acts as backup.
+#   - Update this file whenever ownership changes — stale OWNERS is treated as a doc bug.
+
+# ──────────────────────────────────────────────────────────────
+# GLOBAL FALLBACK
+# ──────────────────────────────────────────────────────────────
+
+[*]
+owners: @[team-lead]
+scope: Catch-all for files without a specific owner
+
+# ──────────────────────────────────────────────────────────────
+# KNOWLEDGE BASE AND DOCUMENTATION
+# ──────────────────────────────────────────────────────────────
+
+[.agent/context/]
+owners: @[tech-lead], @[architect]
+escalation: @[engineering-director]
+scope: All context files, design guides, and governance documentation
+
+[rfcs/]
+owners: @[tech-lead]
+escalation: @[architect]
+scope: RFCs, ADRs, and design doc examples
+
+[AGENTS.md]
+owners: @[tech-lead]
+scope: Master index — guard enforced by CI
+
+# ──────────────────────────────────────────────────────────────
+# CI/CD AND INFRASTRUCTURE
+# ──────────────────────────────────────────────────────────────
+
+[.github/workflows/ci.yml]
+owners: @[devops-lead], @[tech-lead]
+escalation: @[engineering-director]
+scope: Primary CI gate — lint, typecheck, test on every PR
+
+[.github/workflows/risk-check.yml]
+owners: @[tech-lead], @[architect]
+escalation: @[engineering-director]
+scope: RFC risk gate — blocks merge on score ≥ 60
+
+[.github/]
+owners: @[devops-lead]
+escalation: @[tech-lead]
+scope: GitHub Actions workflows, branch protection, repo settings
+
+[infra/]
+owners: @[devops-lead], @[sre-lead]
+escalation: @[tech-lead]
+scope: Docker Compose, automation scripts, load test scripts
+
+# ──────────────────────────────────────────────────────────────
+# SOURCE CODE
+# ──────────────────────────────────────────────────────────────
+
+[src/]
+owners: @[tech-lead]
+escalation: @[architect]
+scope: Application source code — all modules
+
+[src/services/]
+owners: @[backend-lead]
+escalation: @[tech-lead]
+scope: Business logic services
+
+[src/api/]
+owners: @[backend-lead]
+escalation: @[tech-lead]
+scope: API handlers, middleware, route definitions
+
+# ──────────────────────────────────────────────────────────────
+# TESTS
+# ──────────────────────────────────────────────────────────────
+
+[tests/]
+owners: @[qa-lead], @[tech-lead]
+escalation: @[tech-lead]
+scope: All test suites — unit, integration, E2E
+
+[tests/unit/documentation.test.ts]
+owners: @[tech-lead]
+escalation: @[engineering-director]
+scope: AGENTS.md integrity guard — must not be disabled without team approval
+
+# ──────────────────────────────────────────────────────────────
+# SECURITY-SENSITIVE FILES
+# ──────────────────────────────────────────────────────────────
+
+[.env.example]
+owners: @[security-lead], @[tech-lead]
+scope: Environment variable template — review for accidental secret exposure
+
+[.github/workflows/security.yml]
+owners: @[security-lead], @[devops-lead]
+scope: Security gate workflow — changes require security-lead approval

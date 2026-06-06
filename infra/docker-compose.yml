@@ -1,0 +1,75 @@
+# Local development environment
+# Usage:
+#   docker compose up -d        — start all services
+#   docker compose down         — stop and remove containers
+#   docker compose logs -f      — tail logs
+#
+# All ports and credentials here are for LOCAL DEVELOPMENT ONLY.
+# Never use these values in staging or production.
+
+version: "3.9"
+
+services:
+
+  # ─────────────────────────────────────────────
+  # Primary database
+  # Replace with your actual DB engine (postgres, mysql, mongo, etc.)
+  # ─────────────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-appdb}
+      POSTGRES_USER: ${DB_USER:-appuser}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-localdevpassword}
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-appuser}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ─────────────────────────────────────────────
+  # Cache layer (optional — remove if not used)
+  # ─────────────────────────────────────────────
+  cache:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ─────────────────────────────────────────────
+  # Application (uncomment when Dockerfile exists)
+  # ─────────────────────────────────────────────
+  # app:
+  #   build:
+  #     context: ..
+  #     dockerfile: Dockerfile
+  #   restart: unless-stopped
+  #   ports:
+  #     - "${PORT:-3000}:3000"
+  #   environment:
+  #     NODE_ENV: development
+  #     DATABASE_URL: postgres://${DB_USER:-appuser}:${DB_PASSWORD:-localdevpassword}@db:5432/${DB_NAME:-appdb}
+  #     REDIS_URL: redis://cache:6379
+  #   env_file:
+  #     - ../.env
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+  #     cache:
+  #       condition: service_healthy
+  #   volumes:
+  #     - ..:/app          # live reload in dev
+  #     - /app/node_modules
+
+volumes:
+  db_data:

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Start Project — Landing Page</title>
+  <!-- Modern Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="background-blobs">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+  </div>
+
+  <main class="container">
+    <header class="header">
+      <div class="logo">
+        <span class="logo-icon">🚀</span>
+        <h1>start-project</h1>
+      </div>
+      <nav class="nav">
+        <a href="#features" class="nav-link">Features</a>
+        <a href="#api" class="nav-link">API Status</a>
+        <a href="https://github.com/<your-org>/<your-project>" class="btn btn-secondary">Repository</a>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <div class="badge">Version 1.0.0 Stable</div>
+      <h2 class="hero-title">Start your next idea with a clean framework</h2>
+      <p class="hero-desc">
+        A premium boilerplate pre-configured with HTML5 + CSS3 + vanilla JS on the frontend and .NET 8/9 Minimal Web API on the backend. Zero bloat, maximum performance.
+      </p>
+      <div class="hero-actions">
+        <button id="checkApiBtn" class="btn btn-primary">Check Backend Status</button>
+        <a href="#features" class="btn btn-secondary">Explore Features</a>
+      </div>
+    </section>
+
+    <section id="features" class="features">
+      <div class="card">
+        <span class="card-icon">⚡</span>
+        <h3>Fast Frontend</h3>
+        <p>Vanilla JavaScript, semantic HTML5 structure, and custom responsive layouts with CSS grid and custom properties.</p>
+      </div>
+      <div class="card">
+        <span class="card-icon">🏗️</span>
+        <h3>Clean Backend</h3>
+        <p>Powered by .NET 8/9 Minimal APIs featuring high throughput, built-in dependency injection, and native JSON support.</p>
+      </div>
+      <div class="card">
+        <span class="card-icon">🛡️</span>
+        <h3>Governance</h3>
+        <p>Rigorous pre-commit gates, documentation integrity tests, and local drift scanners mapping codebase health.</p>
+      </div>
+    </section>
+
+    <section id="api" class="api-status-section">
+      <div class="api-card">
+        <div class="api-card-header">
+          <h3>Backend API Status</h3>
+          <span id="statusIndicator" class="status-indicator status-offline">Offline</span>
+        </div>
+        <p class="api-card-text">
+          Click the button above to query the .NET backend health endpoint.
+        </p>
+        <div id="apiResponse" class="api-response-code">Response will appear here...</div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <p>&copy; 2026 <your-org>. Open source under the MIT License.</p>
+    </footer>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

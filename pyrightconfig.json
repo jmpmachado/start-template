@@ -1,0 +1,5 @@
+{
+  "extraPaths": ["infra/scripts"],
+  "pythonVersion": "3.12",
+  "typeCheckingMode": "basic"
+}

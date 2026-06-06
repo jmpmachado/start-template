@@ -1,0 +1,64 @@
+# SLSA Compliance: Level 1 (automated build, no signed provenance).
+# Target Level 2+ on project adoption: add cosign signing in release.yml.
+# See .agent/context/SUPPLY_CHAIN.md §3 for the implementation guide.
+#
+# Scope: dependency security audit (Node + Python).
+# Lint + typecheck + tests are owned by ci.yml to avoid duplication.
+name: Security Gates
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master, develop]
+
+jobs:
+  audit-node:
+    name: Node.js Dependency Audit
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [22.x]
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v5
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
+          cache-dependency-path: tooling/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: tooling
+
+      - name: Dependency security audit
+        run: npm audit --audit-level=high
+        working-directory: tooling
+
+  audit-python:
+    name: Python Dependency Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Upgrade packaging toolchain to patched versions
+        run: python -m pip install --upgrade "pip>=26.1.2" "setuptools>=78.1.1" wheel
+
+      - name: Install pip-audit
+        run: python -m pip install pip-audit pyyaml
+
+      - name: Audit Python dependencies
+        # Audits pyyaml and any other packages used by infra/scripts/.
+        # Uses --require-hashes=false since infra/scripts has no requirements.txt —
+        # pip-audit scans the installed environment for known CVEs instead.
+        run: python -m pip_audit --desc on --skip-editable

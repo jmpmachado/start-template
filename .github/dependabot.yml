@@ -1,0 +1,46 @@
+version: 2
+
+updates:
+  # ── npm dependencies ─────────────────────────────────────────────────────────
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '09:00'
+      timezone: UTC
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+    # Group patch and minor updates to reduce PR noise.
+    # Major version bumps are opened as individual PRs (require human + RFC review).
+    groups:
+      patch-and-minor:
+        update-types:
+          - patch
+          - minor
+    ignore:
+      # Node.js 20 is EOL — do not allow it to be pinned back by dependabot
+      - dependency-name: '*'
+        update-types: ['version-update:semver-major']
+        # major updates are NOT ignored — they are opened as individual PRs
+        # remove this block if you want dependabot to also group majors
+
+  # ── GitHub Actions ────────────────────────────────────────────────────────────
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+      day: monday
+      time: '09:00'
+      timezone: UTC
+    open-pull-requests-limit: 3
+    labels:
+      - dependencies
+      - ci
+    # Actions are grouped — runner/action patch updates are low-risk noise.
+    groups:
+      actions-minor:
+        update-types:
+          - patch
+          - minor

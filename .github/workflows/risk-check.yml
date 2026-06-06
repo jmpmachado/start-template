@@ -1,0 +1,61 @@
+name: Design Doc Risk Check
+
+on:
+  push:
+    paths:
+      - "rfcs/**.yaml"
+  pull_request:
+    paths:
+      - "rfcs/**.yaml"
+  schedule:
+    - cron: "0 9 * * 1"   # Monday at 09:00 UTC — weekly sweep
+
+jobs:
+  risk-check:
+    name: RFC Risk Score Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"   # Pin: see infra/scripts/.python-version
+
+      - name: Install dependencies
+        run: pip install pyyaml
+
+      - name: Run risk engine
+        run: |
+          # --alert-threshold 50: annotate RFCs scoring ≥50 in the report.
+          # The block step below enforces the hard gate at ≥60 (see CLAUDE.md).
+          python infra/scripts/risk_engine.py \
+            --rfcs-path rfcs/ \
+            --alert-threshold 50 \
+            --output risk_report.md
+
+      - name: Upload risk report
+        uses: actions/upload-artifact@v4
+        with:
+          name: risk-report
+          path: risk_report.md
+
+      - name: Fail pipeline if critical RFCs found (score ≥ 60)
+        run: |
+          python - <<'EOF'
+          import sys, os
+          sys.path.append(os.path.join(os.getcwd(), "infra/scripts"))
+          from risk_engine import load_rfcs, calc_risk
+
+          results = [calc_risk(r) for r in load_rfcs("rfcs/")]
+          critical = [r for r in results if r["risk"] >= 60]
+
+          if critical:
+              print(f"::error::{len(critical)} RFC(s) at critical risk (score ≥ 60):")
+              for r in critical:
+                  print(f"::error::  {r['id']} — Score {r['risk']} — {r['action']}")
+              sys.exit(1)
+
+          print(f"All {len(results)} RFC(s) below critical threshold.")
+          EOF

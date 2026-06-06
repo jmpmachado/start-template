@@ -1,0 +1,120 @@
+# =============================================================================
+# Dockerfile.template — Multi-stage build template for adopting projects.
+#
+# THIS IS A TEMPLATE — not a runnable Dockerfile.
+# Replace all [PLACEHOLDER] values before use. Delete sections that do not
+# apply to your stack. See comments for guidance on each stage.
+#
+# Supported reference stacks: Node.js · Python · Go
+# Usage: cp infra/Dockerfile.template Dockerfile && edit placeholders
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# STACK SELECTION — uncomment the base images for your stack, delete the rest.
+# [STACK] = nodejs | python | go
+# -----------------------------------------------------------------------------
+
+# ── Node.js ──────────────────────────────────────────────────────────────────
+# ARG NODE_VERSION=20
+# FROM node:${NODE_VERSION}-alpine AS base-nodejs
+
+# ── Python ───────────────────────────────────────────────────────────────────
+# ARG PYTHON_VERSION=3.12   # canonical version: see infra/scripts/.python-version
+# FROM python:${PYTHON_VERSION}-slim AS base-python
+
+# ── Go ───────────────────────────────────────────────────────────────────────
+# ARG GO_VERSION=1.23
+# FROM golang:${GO_VERSION}-alpine AS base-go
+
+# =============================================================================
+# STAGE 1 — builder
+# Installs ALL dependencies (dev + prod) and compiles/bundles the application.
+# This stage is NOT shipped to production — only artifacts are copied out.
+# =============================================================================
+
+# Replace FROM below with the base image matching your [STACK] selection above.
+FROM [STACK]-base AS builder
+
+WORKDIR /build
+
+# ── Node.js builder ──────────────────────────────────────────────────────────
+# COPY package*.json ./
+# RUN npm ci --include=dev
+# COPY . .
+# RUN npm run build          # outputs to /build/dist or /build/.next
+
+# ── Python builder ───────────────────────────────────────────────────────────
+# COPY requirements*.txt pyproject.toml ./
+# RUN pip install --no-cache-dir --upgrade pip \
+#     && pip install --no-cache-dir -r requirements.txt
+# COPY . .
+# RUN python -m compileall src/   # optional — pre-compile .pyc files
+
+# ── Go builder ───────────────────────────────────────────────────────────────
+# COPY go.mod go.sum ./
+# RUN go mod download
+# COPY . .
+# RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /build/app ./cmd/[ENTRYPOINT]
+
+# =============================================================================
+# STAGE 2 — runtime
+# Minimal image containing ONLY what is needed to run the application.
+# No dev tools, no source code, no test fixtures.
+# =============================================================================
+
+# Re-use the same base image family (alpine / slim) for smaller layers.
+FROM [STACK]-base AS runtime
+
+# Non-root user — required for security hardening (see .agent/context/SECURITY.md).
+# Adjust UID/GID if your orchestrator enforces a specific range.
+ARG APP_USER=appuser
+RUN addgroup --system ${APP_USER} && adduser --system --ingroup ${APP_USER} ${APP_USER}
+
+WORKDIR /app
+
+# ── Node.js runtime ──────────────────────────────────────────────────────────
+# COPY --from=builder /build/dist ./dist
+# COPY --from=builder /build/node_modules ./node_modules
+# COPY --from=builder /build/package.json ./
+
+# ── Python runtime ───────────────────────────────────────────────────────────
+# COPY --from=builder /usr/local/lib/python*/site-packages /usr/local/lib/python*/site-packages
+# COPY --from=builder /build/src ./src
+
+# ── Go runtime ───────────────────────────────────────────────────────────────
+# COPY --from=builder /build/app ./app
+
+USER ${APP_USER}
+
+# [PORT] — the port your application listens on.
+# Document this in ONBOARDING.md and docker-compose.yml.
+EXPOSE [PORT]
+
+# Health check — adapt path and interval to your application.
+# Remove if your orchestrator provides its own health check.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD [HEALTHCHECK_COMMAND]
+# Examples:
+#   Node.js: CMD ["node", "-e", "require('http').get('http://localhost:[PORT]/health', r => process.exit(r.statusCode === 200 ? 0 : 1))"]
+#   Python:  CMD ["python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:[PORT]/health')"]
+#   Go:      CMD ["/app/app", "-health-check"]
+
+# [ENTRYPOINT] — command that starts your application.
+# Use ENTRYPOINT + CMD so the container can receive OS signals (SIGTERM) correctly.
+ENTRYPOINT [ENTRYPOINT_ARRAY]
+CMD [CMD_ARRAY]
+# Examples:
+#   Node.js: ENTRYPOINT ["node", "dist/index.js"]
+#   Python:  ENTRYPOINT ["python", "-m", "src.main"]  |  ENTRYPOINT ["gunicorn", "src.main:app"]
+#   Go:      ENTRYPOINT ["/app/app"]
+
+# =============================================================================
+# ADOPTION CHECKLIST
+# [ ] Replace all [PLACEHOLDER] values
+# [ ] Delete unused stack sections
+# [ ] Pin base image to a digest for reproducibility (FROM node:20@sha256:...)
+# [ ] Add .dockerignore covering node_modules/, __pycache__/, .env, coverage/
+# [ ] Verify non-root user (run: docker inspect --format '{{.Config.User}}' <image>)
+# [ ] Run: docker build --target runtime -t [PROJECT_NAME]:local .
+# [ ] Add image scan to CI (see .agent/context/SUPPLY_CHAIN.md §4)
+# =============================================================================

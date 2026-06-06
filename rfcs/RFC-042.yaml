@@ -1,0 +1,30 @@
+id: RFC-042
+title: "Asynchronous Job Queuing Engine"
+criticality: medium
+
+# Companion design doc: .agent/context/DESIGN_DOC_EXAMPLE.md
+# Status: Approved — scores reflect post-review state with mitigations in place.
+# Risk formula: R = Impact×0.60 + Probability×0.40
+# Impact = ((10-G)/10) × (C/10) × criticality_mult × 100
+# See infra/scripts/risk_engine.py for full formula; GOVERNANCE.md §VI for rubric.
+
+governance:
+  # High values = strong governance = lower impact. Low = undocumented = dangerous.
+  completeness: 8    # Goals, non-goals, alternatives, rollback all documented
+  security: 6        # New worker endpoints addressed; auth scheme needs final sign-off
+  testability: 7     # Async testing patterns documented; contract tests specified
+  rollback: 6        # Queue drain + traffic cutover documented; non-trivial but practiced
+  observability: 8   # Per-job state tracking; queue depth and worker lag as SLIs
+  ownership: 8       # Author + architecture/security/SRE reviewers named in design doc
+
+complexity:
+  technical: 7       # Distributed workers, job state machine, at-least-once delivery
+  critical_deps: 6   # Queue infrastructure (Redis/MQ) + worker orchestration added
+  change_scope: 6    # Replaces existing synchronous pipeline end-to-end
+  tech_novelty: 4    # Async queuing is an established pattern; new to this system
+
+probability:
+  failure_history: 3    # New subsystem — limited failure history; previous sync system was stable
+  team_maturity: 3      # (INVERTED) Experienced team with prior distributed-systems work
+  requirement_ambiguity: 3  # Throughput targets and SLOs defined; scaling ceiling TBD
+  deadline_pressure: 4  # Growth-driven deadline (user growth projected — see §1.2)

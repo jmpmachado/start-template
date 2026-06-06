@@ -1,0 +1,70 @@
+# CODEOWNERS — automatic review assignment
+#
+# Syntax: <path-glob>  <owner1> <owner2> ...
+# Owners are GitHub usernames (@user) or team handles (@org/team).
+# Last matching pattern wins. Order matters.
+#
+# Rules for AI agents and humans:
+#   1. Every PR must auto-assign at least one CODEOWNER for each touched area.
+#   2. If a path has no owner, the global fallback (last line) catches it.
+#   3. To change ownership, open a PR modifying THIS file; the existing
+#      owners of the touched area must approve.
+#   4. Keep this file SHORT. Mirror responsibilities defined in CLASS_MAP.md
+#      and GOVERNANCE.md.
+
+# ─── Global fallback (lowest priority — must come first) ─────────────
+*                                       @[ORG]/engineering-leads
+
+# ─── Documentation ───────────────────────────────────────────────────
+*.md                                    @[ORG]/docs
+AGENTS.md                               @[ORG]/engineering-leads @[ORG]/platform
+/.agent/context/                        @[ORG]/engineering-leads
+/.agent/context/SECURITY.md             @[ORG]/security
+/.agent/context/THREAT_MODEL.md         @[ORG]/security
+/.agent/context/SUPPLY_CHAIN.md         @[ORG]/security @[ORG]/platform
+/.agent/context/DISASTER_RECOVERY.md    @[ORG]/platform @[ORG]/sre
+/.agent/context/COMPLIANCE_MAPPING.md   @[ORG]/security @[ORG]/legal
+/.agent/context/TECH_RADAR.md           @[ORG]/engineering-leads
+
+# ─── Source code (customize per stack) ───────────────────────────────
+/src/                                   @[ORG]/backend
+/src/auth/                              @[ORG]/security @[ORG]/backend
+/src/api/                               @[ORG]/backend
+/src/db/                                @[ORG]/data @[ORG]/backend
+/src/ui/                                @[ORG]/frontend
+/src/workers/                           @[ORG]/backend
+
+# ─── Tests ───────────────────────────────────────────────────────────
+/tests/                                 @[ORG]/qa @[ORG]/backend
+/tests/unit/documentation.test.ts      @[ORG]/engineering-leads
+/tests/security/                        @[ORG]/security @[ORG]/qa
+/tests/e2e/                             @[ORG]/qa @[ORG]/frontend
+
+# ─── Infrastructure ──────────────────────────────────────────────────
+/infra/                                 @[ORG]/platform @[ORG]/sre
+/.github/workflows/                     @[ORG]/platform
+/.github/CODEOWNERS                     @[ORG]/engineering-leads
+
+# ─── Build & tooling ─────────────────────────────────────────────────
+package.json                            @[ORG]/platform
+pnpm-lock.yaml                          @[ORG]/platform
+Cargo.toml                              @[ORG]/backend
+Cargo.lock                              @[ORG]/platform
+pyproject.toml                          @[ORG]/platform
+uv.lock                                 @[ORG]/platform
+Dockerfile                              @[ORG]/platform @[ORG]/security
+docker-compose.yml                      @[ORG]/platform
+
+# ─── Database migrations ─────────────────────────────────────────────
+/migrations/                            @[ORG]/data @[ORG]/dba
+/db/migrations/                         @[ORG]/data @[ORG]/dba
+
+# ─── Configuration & secrets policy ──────────────────────────────────
+.env.example                            @[ORG]/security @[ORG]/platform
+.envrc                                  @[ORG]/security @[ORG]/platform
+*.tf                                    @[ORG]/platform @[ORG]/sre
+*.tfvars                                @[ORG]/platform @[ORG]/security
+
+# ─── License & legal ─────────────────────────────────────────────────
+LICENSE                                 @[ORG]/legal
+NOTICE                                  @[ORG]/legal
