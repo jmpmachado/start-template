@@ -43,8 +43,8 @@
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/start-org/start-project.git
-cd [repo-name]
+git clone https://github.com/<your-org>/<your-project>.git
+cd <your-project>
 
 # 2. Copy environment template (never commit real values)
 cp .env.example .env

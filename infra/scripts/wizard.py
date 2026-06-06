@@ -86,8 +86,7 @@ _SCAN_SKIP_DIRS = {"node_modules", ".git", "__pycache__", ".venv", "dist", "buil
 # to template-internal sprints, agents, and decisions if they remain in context.
 TEMPLATE_ONLY_FILES: list[str] = [
     "BACKLOG_HISTORY.md",
-    "HANDOFF_SPRINT18_AGENT_PORTABILITY.md",
-    "HANDOFF_CODEX_MIN_01.md",
+        "HANDOFF_CODEX_MIN_01.md",
     "HANDOFF_GEMINI_MIN_02.md",
     "CODEX_MIN_01_SELF_CONTAINED.md",
     "IMPLEMENTATION_SUMMARY.md",

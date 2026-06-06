@@ -29,7 +29,7 @@
 1. **Add the template as a remote:**
 
    ```bash
-   git remote add template https://github.com/jmpmachado/design-first-template.git
+   git remote add template https://github.com/<your-org>/<your-template-repo>.git
    git fetch template
    ```
 
@@ -45,22 +45,22 @@
 3. **Run the wizard** to fill template placeholders with your project identity:
 
    ```bash
-   python3 infra/scripts/wizard.py
+   npm --prefix tooling run check-drift  # run wizard.py if available in your template version
    ```
 
 4. **Verify:**
 
    ```bash
-   python3 -m pytest tests/unit/ -q          # 121 tests must pass
-   cd tooling && npm install && npm test      # Node projects only
-   node scripts/check-drift.js               # 0 high-severity findings
+   npm --prefix tooling test          # 48 tests must pass
+   cd tooling && npm install && npm test
+   npm run check-drift               # 0 high-severity findings
    ```
 
 5. **Commit the merge:**
 
    ```bash
    git add -A
-   git commit -m "chore(template): adopt design-first-template governance layer"
+   git commit -m "chore(template): adopt start-template governance layer"
    ```
 
 6. **Record the decision** in `DECISION_LOG.md` — add an entry with rationale, alternatives
@@ -102,7 +102,7 @@ Before touching anything, answer these three questions:
 1. **Add the template remote** (if not already present):
 
    ```bash
-   git remote add template https://github.com/jmpmachado/design-first-template.git
+   git remote add template https://github.com/<your-org>/<your-template-repo>.git
    git fetch template
    ```
 
@@ -148,10 +148,10 @@ Before touching anything, answer these three questions:
 7. **Run full verification:**
 
    ```bash
-   python3 -m pytest tests/unit/ -q
+   npm --prefix tooling test          # 48 tests must pass
    cd tooling && npm test
-   node scripts/check-drift.js
-   npm audit --audit-level=high
+   npm run check-drift
+   npm audit --audit-level=high  # from repo root
    ```
 
 8. **Commit and push** to a feature branch, open PR, let CI validate before merging to main.
@@ -167,7 +167,7 @@ Before touching anything, answer these three questions:
 
 | Issue | Mitigation |
 | :--- | :--- |
-| `AGILE_CONFIG.md` has `[CONFIGURE]` placeholders after merge | Run `python3 infra/scripts/wizard.py` — it fills them |
+| `AGILE_CONFIG.md` has `[CONFIGURE]` placeholders after merge | Run `npm --prefix tooling run check-drift  # run wizard.py if available in your template version` — it fills them |
 | `check-drift` reports stale sprint | Fill `AGILE_CONFIG.md §5` manually or via `npm run init-agile` |
 | `documentation.test.ts` fails with orphan context files | Add missing files to `AGENTS.md` in the same commit |
 | `npm audit` has moderate vulnerabilities after merge | Run `npm audit fix` in root and `tooling/` |

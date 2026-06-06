@@ -4,7 +4,7 @@ description: "Runs lint + typecheck + full test suite for the engineering templa
 allowed-tools: [Bash]
 ---
 
-Run the following commands sequentially in the project root (`e:\Users\jmpma\Documents\project-template`):
+Run the following commands sequentially in the project root (`e:\Users\<your-username>\Documents\project-template`):
 
 ```
 npm run lint && npm run typecheck && npm test

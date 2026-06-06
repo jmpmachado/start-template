@@ -99,3 +99,12 @@ TestResults/
 utils/
 docs/utils/
 
+
+# ASP.NET development overrides (may contain local secrets)
+appsettings.Development.json
+
+
+# Internal session artifacts (not template deliverables)
+.agent/AUDIT-*.md
+.agent/HANDOFF_SPRINT*.md
+
