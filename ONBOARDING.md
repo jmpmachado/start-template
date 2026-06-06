@@ -9,27 +9,53 @@
 
 ### What you need
 
-**Node.js tooling (governance, lint, tests):**
+> 📖 **Full install guide:** [TOOLING_SETUP.md](TOOLING_SETUP.md) — Node.js, .NET 9, and Python with winget one-liners and troubleshooting.
 
-| Tool | Minimum Version | Check Command |
-| :--- | :--- | :--- |
-| Node.js | v24+ | `node --version` |
-| npm | v10+ (bundled with Node) | `npm --version` |
-| Git | 2.40+ | `git --version` |
-| Editor | VS Code recommended | — |
+**Node.js tooling (governance, lint, tests) — mandatory:**
 
-**Backend (.NET 8/9):**
+| Tool | Minimum | Check | Install |
+| :--- | :--- | :--- | :--- |
+| Node.js | v24+ | `node --version` | `winget install --id OpenJS.NodeJS.LTS` |
+| npm | v10+ | `npm --version` | bundled with Node.js |
+| Git | 2.40+ | `git --version` | `winget install --id Git.Git` |
+| Editor | — | — | VS Code recommended |
 
-| Tool | Minimum Version | Check Command | Install |
+```powershell
+# Install Node.js if not present
+winget install --id OpenJS.NodeJS.LTS --accept-package-agreements
+# Open a new terminal, then verify:
+node --version   # v24+
+npm --version    # 10+
+```
+
+> Full guide (nvm, manual download, troubleshooting): [TOOLING_SETUP.md §1](TOOLING_SETUP.md)
+
+**Backend (.NET 9) — mandatory for backend work:**
+
+| Tool | Minimum | Check | Install |
 | :--- | :--- | :--- | :--- |
 | .NET 9 SDK | 9.0.x | `dotnet --version` | See [DOTNET_SETUP.md](DOTNET_SETUP.md) §2 |
 | VS2022 Build Tools | 17.8+ | `msbuild -version` | See [DOTNET_SETUP.md](DOTNET_SETUP.md) §1 |
 
-> **VS2022 already installed?** You only need the standalone .NET 9 SDK:
-> ```powershell
-> winget install --id Microsoft.DotNet.SDK.9
-> ```
-> See [DOTNET_SETUP.md §2](DOTNET_SETUP.md) for full options (winget / manual download / VS Installer).
+```powershell
+# VS2022 already installed? Add .NET 9 SDK only:
+winget install --id Microsoft.DotNet.SDK.9 --accept-package-agreements
+# Open a new terminal, then verify:
+dotnet --version   # 9.x.x
+```
+
+> Full guide (VS2022 Build Tools, manual download, VS Installer): [DOTNET_SETUP.md §2](DOTNET_SETUP.md)
+
+**Python ≥ 3.10 — optional (only for `infra/scripts/`):**
+
+| Tool | Minimum | Check | Install |
+| :--- | :--- | :--- | :--- |
+| Python | 3.10+ | `python --version` | `winget install --id Python.Python.3.12` |
+| pip | bundled | `pip --version` | bundled with Python |
+| pyyaml | — | `python -c "import yaml"` | `pip install pyyaml` |
+
+> Not needed to run the frontend or backend. Only required for `infra/scripts/risk_engine.py` and `wizard.py`.
+> Full guide: [TOOLING_SETUP.md §3](TOOLING_SETUP.md)
 
 ### Recommended editor setup
 
@@ -50,22 +76,31 @@ cd <your-project>
 cp .env.example .env
 # Fill in the required values — see .env.example comments
 
-# 3. Install dependencies (Node.js reference stack)
-npm install
+# 3. Install Node.js tooling
+npm --prefix tooling install
 
-# 4. Run the test suite — all tests must pass before you write a line
-npm test
+# 4. Run the Node.js test suite
+npm --prefix tooling test
+# Expected: 48 passed | 3 todo | 1 skipped
 
-# 4b. Run Python tests (if Python tooling is active)
-npm run test:python   # runs pytest tests/unit/test_*.py
+# 4b. Run drift scanner
+npm --prefix tooling run check-drift
+# Expected: 0 high findings
 
-# 5. Start the development server
-npm run dev
+# 4c. Build and test the .NET backend
+dotnet restore src/backend/backend.csproj
+dotnet build src/backend/backend.csproj
+dotnet test tests/backend/backend.tests.csproj
+# Expected: 1 passed, 0 failed
+
+# 5. Open the frontend (no build step needed)
+start src/frontend/index.html
+
+# 5b. Start the .NET backend API (optional)
+dotnet run --project src/backend/backend.csproj
+# Health: https://localhost:5001/health
 ```
 
-> Replace `npm install` / `npm test` / `npm run dev` with your stack's equivalent if not Node.js.
-> Estimated setup time: ≤ 5 minutes for a clean Node.js environment.
->
 > If any step fails, check [TROUBLESHOOTING](#9-troubleshooting) below before asking for help.
 
 ---
