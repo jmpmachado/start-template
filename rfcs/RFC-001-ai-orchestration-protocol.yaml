@@ -1,0 +1,23 @@
+id: RFC-001
+title: "AI Agent Orchestration Protocol (Capable + Fast Model)"
+criticality: medium
+
+governance:
+  completeness: 9      # protocol documented with limits, rules and rotate script
+  security: 7          # no impact on production code; risk is cost, not security
+  testability: 8       # rotate_log script tested and functional
+  rollback: 10         # no runtime effect; revert = stop using subagents
+  observability: 9     # token_log.jsonl with auto-rotation and per-session summary
+  ownership: 8         # protocol in project memory/; responsible: orchestrator model
+
+complexity:
+  technical: 3              # simple scripting; no system integration
+  critical_deps: 2          # only shell runtime required
+  change_scope: 2           # affects only audit workflow, not production code
+  tech_novelty: 4           # LLM orchestration is an emerging pattern
+
+probability:
+  failure_history: 3        # main risk: web search in fast model (53k tokens — documented)
+  team_maturity: 2          # (INVERTED) team familiar with pattern after initial experiment
+  requirement_ambiguity: 3  # provider token limits may change
+  deadline_pressure: 1

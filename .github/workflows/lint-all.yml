@@ -1,0 +1,28 @@
+name: Lint All — Code + Types + Markdown
+
+on:
+  pull_request:
+    branches: [main, master]
+  push:
+    branches: [main, master]
+
+jobs:
+  lint-all:
+    name: lint + typecheck + lint:md
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+          cache: 'npm'
+          cache-dependency-path: tooling/package-lock.json
+
+      - name: Install dependencies
+        run: npm --prefix tooling install
+
+      - name: lint + typecheck + lint:md
+        run: npm --prefix tooling run lint:all

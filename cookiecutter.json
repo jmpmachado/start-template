@@ -1,0 +1,14 @@
+{
+  "project_name": "my-project",
+  "project_slug": "{{ cookiecutter.project_name.lower().replace(' ', '-').replace('_', '-') }}",
+  "stack": ["node-ts", "python", "go", "rust", "java", "multi"],
+  "profile": ["founder", "team", "public"],
+  "author": "Your Name",
+  "year": "2026",
+  "_copy_without_render": [
+    ".github/workflows/*.yml",
+    ".agent/context/CI_CD.md",
+    "PROJECT_PLAYBOOK.md",
+    "infra/scripts/k6/**"
+  ]
+}

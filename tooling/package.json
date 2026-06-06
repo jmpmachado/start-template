@@ -1,0 +1,40 @@
+{
+  "name": "[project-name]",
+  "version": "0.1.0",
+  "description": "Engineering template — replace with project description",
+  "type": "module",
+  "private": true,
+  "templateToolingOnly": true,
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint .. --max-warnings 0",
+    "lint:md": "cd .. && markdownlint-cli2",
+    "lint:all": "npm run lint && npm run typecheck && npm run lint:md",
+    "format": "prettier --write ..",
+    "format:check": "prettier --check ..",
+    "typecheck": "tsc --noEmit",
+    "test:integration": "vitest run --project integration",
+    "check-drift": "node ../scripts/check-drift.js",
+    "rotatelog": "node ../scripts/rotatelog.js",
+    "init-agile": "node -e \"console.error('DEPRECATED: npm run init-agile is deprecated (DL-017). Use: python infra/scripts/wizard.py'); process.exit(1)\"",
+    "init-agile:win": "node -e \"console.error('DEPRECATED: npm run init-agile:win is deprecated (DL-017). Use: python infra/scripts/wizard.py'); process.exit(1)\"",
+    "init-agile:unix": "node -e \"console.error('DEPRECATED: npm run init-agile:unix is deprecated (DL-017). Use: python infra/scripts/wizard.py'); process.exit(1)\""
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "@types/node": "^22.0.0",
+    "@vitest/coverage-v8": "^4.1.7",
+    "eslint": "^9.0.0",
+    "eslint-plugin-security": "^4.0.0",
+    "markdownlint-cli2": "^0.22.1",
+    "prettier": "^3.8.3",
+    "typescript": "^5.4.0",
+    "typescript-eslint": "^8.0.0",
+    "vitest": "^4.1.7"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  }
+}

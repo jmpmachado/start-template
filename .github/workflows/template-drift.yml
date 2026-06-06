@@ -1,0 +1,156 @@
+name: Template Drift Detection
+
+# Runs weekly and on push to main/master.
+# Observation only — never modifies files.
+# Findings appear in the workflow summary and as annotations.
+# A high-severity finding sets exit code 1 and fails the job.
+
+on:
+  schedule:
+    - cron: '0 8 * * 1'   # every Monday 08:00 UTC
+  push:
+    branches: [main, master]
+    paths:
+      - 'tooling/package.json'
+      - 'tooling/package-lock.json'
+      - 'tests/unit/documentation.test.ts'
+  workflow_dispatch:       # manual trigger from GitHub Actions UI
+
+jobs:
+  drift-check:
+    name: Template Health Scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write        # needed to open drift-report issues
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+          cache: 'npm'
+          cache-dependency-path: tooling/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: tooling
+
+      # ── check 1-5: run local drift script ──────────────────────────────────
+      - name: Run drift scan
+        id: drift
+        run: |
+          set +e
+          node scripts/check-drift.js 2>&1 | tee drift_output.txt
+          EXIT_CODE=${PIPESTATUS[0]}
+          echo "exit_code=$EXIT_CODE" >> "$GITHUB_OUTPUT"
+
+          # count findings by severity
+          HIGHS=$(grep -c "severity: high" drift_output.txt || true)
+          MEDIUMS=$(grep -c "severity: medium" drift_output.txt || true)
+          LOWS=$(grep -c "severity: low" drift_output.txt || true)
+          echo "highs=$HIGHS"     >> "$GITHUB_OUTPUT"
+          echo "mediums=$MEDIUMS" >> "$GITHUB_OUTPUT"
+          echo "lows=$LOWS"       >> "$GITHUB_OUTPUT"
+          exit $EXIT_CODE
+
+      # ── write findings to workflow summary ─────────────────────────────────
+      - name: Write summary
+        if: always()
+        run: |
+          {
+            echo "## Template Drift Report"
+            echo ""
+            if [ "${{ steps.drift.outputs.exit_code }}" = "0" ]; then
+              echo "✅ **No findings** — template is healthy."
+            else
+              echo "| Severity | Count |"
+              echo "|---|---|"
+              echo "| 🔴 High   | ${{ steps.drift.outputs.highs }} |"
+              echo "| 🟡 Medium | ${{ steps.drift.outputs.mediums }} |"
+              echo "| 🔵 Low    | ${{ steps.drift.outputs.lows }} |"
+              echo ""
+              echo "### Findings"
+              echo '```'
+              cat drift_output.txt
+              echo '```'
+              echo ""
+              echo "> Run \`npm run check-drift\` locally for the same output."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # ── open GitHub issue on high-severity findings (weekly run only) ───────
+      - name: Open drift issue
+        if: |
+          steps.drift.outputs.exit_code != '0' &&
+          steps.drift.outputs.highs != '0' &&
+          github.event_name == 'schedule'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const output = fs.readFileSync('drift_output.txt', 'utf8');
+            const highs   = '${{ steps.drift.outputs.highs }}';
+            const mediums = '${{ steps.drift.outputs.mediums }}';
+            const lows    = '${{ steps.drift.outputs.lows }}';
+
+            // Check if an open drift issue already exists to avoid duplicates
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: 'template-drift',
+              state: 'open',
+            });
+            if (issues.length > 0) {
+              // Update existing issue with new findings
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issues[0].number,
+                body: `## Weekly drift scan — ${new Date().toISOString().split('T')[0]}\n\n` +
+                  `| 🔴 High | 🟡 Medium | 🔵 Low |\n|---|---|---|\n` +
+                  `| ${highs} | ${mediums} | ${lows} |\n\n` +
+                  `\`\`\`\n${output}\`\`\``,
+              });
+              return;
+            }
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `[template-drift] ${highs} high-severity finding(s) detected — ${new Date().toISOString().split('T')[0]}`,
+              labels: ['template-drift'],
+              body: [
+                '## Template Drift — Automated Report',
+                '',
+                'The weekly drift scan found high-severity issues that require human review.',
+                '',
+                `| 🔴 High | 🟡 Medium | 🔵 Low |`,
+                `|---|---|---|`,
+                `| ${highs} | ${mediums} | ${lows} |`,
+                '',
+                '### Findings',
+                '```',
+                output,
+                '```',
+                '',
+                '### Next steps',
+                '1. Run `npm run check-drift` locally to reproduce',
+                '2. Fix high-severity findings before next sprint',
+                '3. For Node.js EOL: update `tooling/package.json` engines and open an RFC if jumping a major version',
+                '4. For npm audit HIGH: patch or accept risk with a note in `DECISION_LOG.md`',
+                '5. Close this issue when all high findings are resolved',
+                '',
+                '> This issue was opened automatically by `template-drift.yml`. Do not disable the workflow — fix the root cause.',
+              ].join('\n'),
+            });
+
+      - name: Complexity budget check
+        run: |
+          core_count=$(grep -c '\[Core\]' AGENTS.md || true)
+          echo "Core file count: $core_count"
+          if [ "$core_count" -gt 20 ]; then
+            echo "::warning::Core tier has $core_count files — Solo profile budget (≤12) exceeded. Review GOVERNANCE.md §VII."
+          fi

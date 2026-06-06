@@ -1,0 +1,14 @@
+[
+  {
+    "id": "e1a2b3c4-0001-4000-a000-000000000001",
+    "parent_id": null,
+    "timestamp": "2026-06-06T13:34:00Z",
+    "severity": "high",
+    "scope": [
+      ".agent/memory.json",
+      ".agent/context/AGENT_GUIDELINES.md"
+    ],
+    "summary": "Agent Guidelines (Directives 1-4, Rules 8/9/11) registered as canonical behavioral contract",
+    "source_commit": "initial"
+  }
+]

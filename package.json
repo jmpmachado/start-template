@@ -1,0 +1,29 @@
+{
+  "name": "[project-name]",
+  "version": "0.1.0",
+  "description": "Engineering template — replace with project description. Node tooling lives in tooling/.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "pretest": "npm ci --prefix tooling --silent",
+    "test": "npm --prefix tooling test",
+    "test:watch": "npm --prefix tooling run test:watch",
+    "test:coverage": "npm --prefix tooling run test:coverage",
+    "lint": "npm --prefix tooling run lint",
+    "lint:md": "npm --prefix tooling run lint:md",
+    "lint:all": "npm --prefix tooling run lint:all",
+    "format": "npm --prefix tooling run format",
+    "format:check": "npm --prefix tooling run format:check",
+    "typecheck": "npm --prefix tooling run typecheck",
+    "test:integration": "npm --prefix tooling run test:integration",
+    "check-drift": "npm --prefix tooling run check-drift",
+    "rotatelog": "npm --prefix tooling run rotatelog",
+    "init-agile": "npm --prefix tooling run init-agile",
+    "init-agile:win": "npm --prefix tooling run init-agile:win",
+    "init-agile:unix": "npm --prefix tooling run init-agile:unix",
+    "test:python": "python -m pytest tests/unit/ -q"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  }
+}

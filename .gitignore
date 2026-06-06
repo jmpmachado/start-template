@@ -1,0 +1,86 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build output
+dist/
+build/
+out/
+*.js.map
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+.venv/
+venv/
+
+# Risk reports (generated artifacts)
+risk_report.md
+risk_report.json
+
+# Editor
+# Remove .vscode/ line if team uses shared VS Code settings (e.g., extensions.json)
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+*.tmp
+
+# Database dumps
+*.dump
+*.sql.gz
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+
+# Runtime
+pids/
+*.pid
+*.seed
+
+# k6 results
+k6_results/
+
+# TypeScript incremental build
+*.tsbuildinfo
+
+# CI test reports
+junit*.xml
+test-results/
+
+# IDE / AI assistant local configs
+.junie/
+.cursor/
+# .claude/ personal session data excluded; .claude/commands/ is a template deliverable and IS tracked
+.claude/projects/
+.claude/todos/
+.claude/*.json
+.claude/*.jsonl
+
+# Generated artifacts (not template deliverables)
+TRADEMARKED_REFERENCES.md
+drift_output.txt
+placeholder_findings.txt
+
+# Generated TypeScript declarations
+scripts/detect-stack.d.ts
+scripts/lib/agile-config.d.ts

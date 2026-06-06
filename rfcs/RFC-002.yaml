@@ -1,0 +1,38 @@
+id: RFC-002
+title: "Multi-language CI matrix — per-stack workflow strategy"
+criticality: medium
+
+# Context:
+# The template is language-agnostic but ships a single Node.js CI workflow (ci.yml).
+# Child projects using Python, Go, or Rust have no CI template to inherit.
+# This RFC establishes the detection + dispatch strategy: a detect-stack script
+# reads CONFIGURE.md, exports PROJECT_STACK, and triggers only the relevant
+# per-language workflow via workflow_call. No new runtime deps are added to the
+# template core; each language workflow is opt-in.
+#
+# Implementation plan (5 USs):
+#   COH-2a — this RFC (gate before any code)
+#   COH-2b — scripts/detect-stack.js (stack detector + unit tests)
+#   COH-2c — .github/workflows/ci-python.yml (pytest + ruff, matrix 3.11/3.12)
+#   COH-2d — .github/workflows/ci-go.yml + ci-rust.yml
+#   COH-2e — .github/workflows/ci-matrix.yml (workflow_call orchestrator)
+
+governance:
+  completeness: 7    # design split into 5 USs with explicit dependencies; no production endpoint
+  security: 6        # CI workflows have supply-chain risk (actions pinning); addressed by security.yml
+  testability: 8     # detect-stack has unit tests; per-language workflows verified against real toolchains
+  rollback: 9        # additive-only — new workflow files; removing them reverts the feature instantly
+  observability: 7   # CI logs are the observability surface; no runtime metrics needed
+  ownership: 8       # owned by template maintainer; child projects opt-in explicitly
+
+complexity:
+  technical: 4       # workflow_call dispatch is well-understood GitHub Actions pattern
+  critical_deps: 3   # depends on actions/setup-python, actions/setup-go, dtolnay/rust-toolchain — all stable
+  change_scope: 4    # 5 new files (1 script + 4 workflows); no existing files modified
+  tech_novelty: 3    # stack detection via CONFIGURE.md read is simple string parsing
+
+probability:
+  failure_history: 2    # CI workflow additions have low incident history in this template
+  team_maturity: 2      # senior engineer; template already has 6 working CI workflows
+  requirement_ambiguity: 4  # "multi-language" scope is bounded to Python/Go/Rust in this RFC
+  deadline_pressure: 1  # no deadline; template enhancement, not product feature

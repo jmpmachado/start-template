@@ -1,0 +1,82 @@
+# ci-matrix.yml — Stack-aware CI orchestrator.
+# Reads PROJECT_STACK from CONFIGURE.md via detect-stack.js and triggers
+# only the relevant per-language workflow. ci.yml (Node) runs independently.
+#
+# Supported stacks: node | python | go | rust | none
+# Add new stacks by: (1) creating ci-<stack>.yml, (2) adding a job below.
+name: CI Matrix
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master, develop]
+
+jobs:
+  detect:
+    name: Detect project stack
+    runs-on: ubuntu-latest
+    outputs:
+      stack: ${{ steps.detect.outputs.stack }}
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+
+      - name: Detect stack
+        id: detect
+        run: |
+          stack=$(node scripts/detect-stack.js)
+          echo "stack=$stack" >> $GITHUB_OUTPUT
+          echo "Detected stack: $stack"
+
+  python:
+    name: Python CI
+    needs: detect
+    if: needs.detect.outputs.stack == 'python'
+    uses: ./.github/workflows/ci-python.yml
+
+  go:
+    name: Go CI
+    needs: detect
+    if: needs.detect.outputs.stack == 'go'
+    uses: ./.github/workflows/ci-go.yml
+
+  rust:
+    name: Rust CI
+    needs: detect
+    if: needs.detect.outputs.stack == 'rust'
+    uses: ./.github/workflows/ci-rust.yml
+
+  summary:
+    name: Stack CI summary
+    runs-on: ubuntu-latest
+    needs: [detect, python, go, rust]
+    if: always()
+    steps:
+      - name: Fail if detect failed
+        if: needs.detect.result == 'failure'
+        run: |
+          echo "::error::Stack detection failed — downstream CI skipped."
+          exit 1
+
+      - name: Fail if triggered job failed
+        # Only fail on jobs that actually ran (not skipped). Skipped = stack not selected.
+        if: |
+          (needs.python.result == 'failure') ||
+          (needs.go.result == 'failure') ||
+          (needs.rust.result == 'failure')
+        run: |
+          echo "::error::One or more per-stack CI jobs failed."
+          exit 1
+
+      - name: Report
+        run: |
+          echo "Stack: ${{ needs.detect.outputs.stack }}"
+          echo "Python: ${{ needs.python.result || 'skipped' }}"
+          echo "Go:     ${{ needs.go.result || 'skipped' }}"
+          echo "Rust:   ${{ needs.rust.result || 'skipped' }}"

@@ -1,0 +1,12 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Placeholder Validation > context files should not contain unfilled placeholders (except known template files) 1`] = `
+{
+  "AGENT_HANDOFF.md": 1,
+  "ARCHITECTURE.md": 2,
+  "DATA_MODEL.md": 1,
+  "DEFINITION_OF_DONE.md": 1,
+  "DEPENDENCY_POLICY.md": 1,
+  "THREAT_MODEL.md": 1,
+}
+`;

@@ -1,0 +1,63 @@
+founder:
+  label: "Minimal / Solo / Founder (1–3 people + AI agents, no public users)"
+  optional:
+    # Architecture
+    - ARCHITECTURE_MAP.md
+    - ARCHITECTURE_SCORING_PLAYBOOK.md
+    - TRADE_OFF_SIMULATOR.md
+    # Quality — no production load yet
+    - E2E_TESTING.md
+    - LOAD_TESTING_FRAMEWORK.md
+    # Governance — no users, no compliance mandate
+    - SUPPLY_CHAIN.md
+    - GOVERNANCE.md
+    - COMPLIANCE_TESTING.md
+    - RECORDS_OF_PROCESSING.md
+    - DATA_PRIVACY.md
+    - AUDIT_REPORT.md
+    # Operations — no on-call, no SLA (RUNBOOK kept: basic deploy/rollback needed even solo)
+    - INCIDENT_RUNBOOK.md
+    - DISASTER_RECOVERY.md
+    - OBSERVABILITY.md
+    - CAPACITY_PLANNING.md
+    # Project mgmt — lightweight backlog is fine
+    - TECH_RADAR.md
+    - MATURITY_REPORT.md
+    - PRODUCTION_READINESS_REVIEW.md
+  note: >-
+    Minimum context for AI agents: ARCHITECTURE, CLASS_MAP, STATE_MACHINE, DATA_MODEL,
+    BEST_PRACTICES, PATTERNS, TEST_STRATEGY, SECURITY, THREAT_MODEL,
+    DECISION_LOG, CI_CD, RUNBOOK, DEPENDENCY_POLICY, BACKLOG.
+    Without these the agent cannot navigate the codebase or enforce conventions.
+    Adopt the 'team' profile before onboarding the first external user.
+
+team:
+  label: "Small Team (2–8 people + AI agents, real users)"
+  optional:
+    # Architecture — still manageable without explicit map
+    - ARCHITECTURE_MAP.md
+    # Quality — load testing optional at this stage
+    - LOAD_TESTING_FRAMEWORK.md
+    # Governance — compliance optional unless regulated
+    - COMPLIANCE_TESTING.md
+    - RECORDS_OF_PROCESSING.md
+    - AUDIT_REPORT.md
+    # Operations — capacity planning deferred
+    - CAPACITY_PLANNING.md
+    # Project mgmt
+    - TECH_RADAR.md
+    - MATURITY_REPORT.md
+  note: >-
+    AI agent context: all founder required files plus ANTIPATTERNS, API_CONTRACT,
+    DATA_PRIVACY, INCIDENT_RUNBOOK, DISASTER_RECOVERY, OBSERVABILITY, DEPENDENCY_POLICY.
+    With real users the agent must know the threat surface, data model, and recovery procedures.
+    Adopt the 'public' profile before opening to external contributors or publishing the API.
+
+public:
+  label: "Public / Open (any size, external contributors or public API)"
+  optional: []
+  note: >-
+    Full profile required. External contributors and public API consumers depend on
+    complete documentation. SUPPLY_CHAIN and DEPENDENCY_POLICY are mandatory — OSS is
+    a supply chain attack vector. API_CONTRACT required to enforce semver.
+    AI agents from external teams have zero prior codebase knowledge; no file is safe to omit.

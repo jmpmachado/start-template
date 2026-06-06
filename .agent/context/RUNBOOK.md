@@ -1,0 +1,396 @@
+# Operational Runbook — start-project
+
+> Day-to-day operations reference. For incident response see `INCIDENT_RUNBOOK.md`.
+> Keep this document current — a stale runbook is more dangerous than no runbook.
+> Each procedure must be executable by an on-call engineer without prior context.
+
+---
+
+## 1. Service Inventory
+
+| Service        | Role               | Port     | Health endpoint  | Restart command                                        |
+| :------------- | :----------------- | :------- | :--------------- | :----------------------------------------------------- |
+| `[api-server]` | HTTP API           | `[3000]` | `GET /health`    | `[systemctl restart api / docker compose restart api]` |
+| `[worker]`     | Background jobs    | —        | `GET /health`    | `[systemctl restart worker]`                           |
+| `[database]`   | Primary data store | `[5432]` | `pg_isready`     | `[systemctl restart postgresql]`                       |
+| `[cache]`      | Session / hot data | `[6379]` | `redis-cli ping` | `[systemctl restart redis]`                            |
+
+---
+
+## 2. Deploy
+
+### 2.1 Standard deploy (CI/CD)
+
+All production deploys go through CI. Manual deploys are only permitted during incidents.
+
+```bash
+# Trigger via git push to main — CI handles build, test, deploy
+git push origin main
+
+# Monitor deploy progress
+[gh run watch / check CI dashboard URL]
+
+# Verify deploy succeeded
+curl -s https://[domain]/health | jq .
+```
+
+Expected healthy response:
+
+```json
+{ "status": "ok", "version": "[semver]", "uptime_s": [N] }
+```
+
+### 2.2 Manual deploy (incident only)
+
+```bash
+# Build and push image
+docker build -t [registry]/[image]:[tag] .
+docker push [registry]/[image]:[tag]
+
+# Deploy to [environment]
+[kubectl set image deployment/api api=[registry]/[image]:[tag]]
+# or
+[docker compose pull && docker compose up -d]
+
+# Verify rollout
+[kubectl rollout status deployment/api]
+```
+
+### 2.3 Pre-deploy checklist
+
+- [ ] All CI checks passing on the target commit.
+- [ ] Database migrations reviewed and tested.
+- [ ] Feature flags configured for gradual rollout (if applicable).
+- [ ] On-call engineer available for the 30 minutes following deploy.
+- [ ] Rollback procedure known and tested.
+
+---
+
+## 3. Rollback
+
+### 3.1 Application rollback
+
+```bash
+# Option A — revert to previous image tag
+[kubectl set image deployment/api api=[registry]/[image]:[previous-tag]]
+
+# Option B — revert git commit and redeploy via CI
+git revert HEAD
+git push origin main
+
+# Verify rollback
+curl -s https://[domain]/health | jq .version
+```
+
+### 3.2 Database migration rollback
+
+> Only possible if the migration has a `down` script. Check `DATA_MODEL.md` section 7.
+
+```bash
+# Run down migration
+[migration-tool down --steps 1]
+
+# Verify schema version
+[migration-tool status]
+```
+
+**If the migration is irreversible:** follow the dual-write rollback procedure documented in `DATA_MODEL.md` section 7, or escalate to `[tech-lead]`.
+
+---
+
+## 4. Scaling
+
+### 4.1 Horizontal scale (stateless services)
+
+```bash
+# Scale up API replicas
+[kubectl scale deployment/api --replicas=N]
+# or
+[docker service scale api=N]
+
+# Verify
+[kubectl get pods -l app=api]
+```
+
+### 4.2 Database connection pool
+
+If DB connection exhaustion is observed (`FATAL: remaining connection slots are reserved`):
+
+```bash
+# Check current connections
+psql -c "SELECT count(*) FROM pg_stat_activity WHERE datname='[dbname]';"
+
+# Increase pool size in app config (requires redeploy)
+# ENV: DATABASE_POOL_MAX=[N]
+
+# Short-term: terminate idle connections older than 10 minutes
+psql -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity
+         WHERE datname='[dbname]' AND state='idle'
+         AND query_start < NOW() - INTERVAL '10 minutes';"
+```
+
+### 4.3 Cache scaling
+
+```bash
+# Check memory usage
+redis-cli info memory | grep used_memory_human
+
+# Flush expired keys (safe — only removes expired entries)
+redis-cli --scan --pattern '*' | xargs redis-cli object idletime
+```
+
+---
+
+## 5. Database Operations
+
+### 5.1 Run a migration
+
+```bash
+# Dry-run first — verify SQL before applying
+[migration-tool migrate --dry-run]
+
+# Apply
+[migration-tool migrate]
+
+# Verify
+[migration-tool status]
+```
+
+### 5.2 Backup
+
+```bash
+# Manual backup (automated backups run at [HH:MM UTC] via [cron/cloud scheduler])
+pg_dump -Fc [dbname] > backup_$(date +%Y%m%d_%H%M%S).dump
+
+# Verify backup integrity
+pg_restore --list backup_*.dump | head -20
+```
+
+### 5.3 Restore from backup
+
+```bash
+# Stop application traffic (or use read-replica for restore)
+[scale down api replicas to 0]
+
+# Restore
+pg_restore -d [dbname] --clean --if-exists backup_[timestamp].dump
+
+# Verify row counts match expectation
+psql -c "SELECT relname, n_live_tup FROM pg_stat_user_tables ORDER BY n_live_tup DESC LIMIT 10;"
+
+# Resume traffic
+[scale up api replicas]
+```
+
+### 5.4 Slow query investigation
+
+```bash
+# Find queries running > 5 seconds
+psql -c "SELECT pid, now() - query_start AS duration, query
+         FROM pg_stat_activity
+         WHERE state = 'active' AND now() - query_start > INTERVAL '5 seconds'
+         ORDER BY duration DESC;"
+
+# Kill a specific query
+psql -c "SELECT pg_cancel_backend([pid]);"
+
+# Force terminate if cancel does not work
+psql -c "SELECT pg_terminate_backend([pid]);"
+```
+
+---
+
+## 6. Secret Rotation
+
+> Rotate secrets on schedule or immediately after any suspected exposure.
+
+### 6.1 JWT signing secret
+
+```bash
+# 1. Generate new secret (≥256 bits)
+openssl rand -hex 32
+# Windows PowerShell alternative:
+# [System.Convert]::ToBase64String([System.Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
+
+# 2. Update secret in [secrets manager / environment]
+[aws ssm put-parameter --name /[project]/JWT_SECRET --value "[new-secret]" --overwrite]
+# or equivalent for your secrets manager
+
+# 3. Redeploy (old tokens signed with previous secret will be invalid after TTL)
+[trigger deploy]
+
+# 4. Monitor for auth failures spike in logs
+[tail log command — see section 7]
+```
+
+### 6.2 Database password
+
+```bash
+# 1. Create new password
+openssl rand -base64 24
+
+# 2. Update in database
+psql -c "ALTER USER [app_user] PASSWORD '[new-password]';"
+
+# 3. Update in secrets manager
+[update secret]
+
+# 4. Redeploy
+[trigger deploy]
+
+# 5. Verify connectivity
+[health check endpoint]
+```
+
+### 6.3 API keys (third-party services)
+
+For each third-party integration:
+
+1. Generate new key in the provider's dashboard.
+2. Update in secrets manager.
+3. Redeploy.
+4. Verify integration is functional.
+5. Revoke old key in provider dashboard.
+
+---
+
+## 7. Log Access
+
+```bash
+# Application logs (last 100 lines)
+[kubectl logs -l app=api --tail=100]
+# or
+[docker compose logs --tail=100 api]
+# or
+[journalctl -u api -n 100]
+
+# Filter for errors only
+[... | grep '"level":"error"']
+
+# Filter by request ID (distributed tracing)
+[... | grep '"request_id":"[uuid]"']
+
+# Follow live
+[kubectl logs -l app=api -f]
+```
+
+### Log levels and expected rates
+
+| Level   | Normal rate          | Investigate if                |
+| :------ | :------------------- | :---------------------------- |
+| `error` | `[< N/min]`          | Rate spikes 5× above baseline |
+| `warn`  | `[< N/min]`          | Sustained for > 5 minutes     |
+| `info`  | High volume — normal | —                             |
+
+---
+
+## 8. Cache Operations
+
+```bash
+# Flush specific key pattern (use with caution in production)
+redis-cli --scan --pattern '[prefix]:*' | xargs redis-cli del
+
+# Flush entire cache (use only in emergencies — causes thundering herd)
+redis-cli FLUSHDB
+
+# Inspect a key
+redis-cli GET [key]
+redis-cli TTL [key]
+```
+
+---
+
+## 9. Health Check Reference
+
+| Check    | Command                               | Healthy output          |
+| :------- | :------------------------------------ | :---------------------- |
+| API      | `curl -s https://[domain]/health`     | `{"status":"ok"}`       |
+| Database | `pg_isready -h [host] -U [user]`      | `accepting connections` |
+| Cache    | `redis-cli -h [host] ping`            | `PONG`                  |
+| Workers  | `curl -s http://[worker-host]/health` | `{"status":"ok"}`       |
+
+---
+
+## 10. Scheduled Maintenance
+
+| Task             | Schedule               | Command                      | Notes                   |
+| :--------------- | :--------------------- | :--------------------------- | :---------------------- |
+| DB backup        | `[daily at HH:MM UTC]` | See section 5.2              | Retention: [N days]     |
+| Secret rotation  | `[semi-annual]`        | See section 6                | Calendar invite: [link] |
+| Dependency audit | `[weekly via CI]`      | `npm audit`                  | Alerts to `[channel]`   |
+| Log rotation     | `[daily]`              | `[logrotate / cloud native]` | Retention: [N days]     |
+
+---
+
+## Multi-Language Debug Procedures
+
+See `LANGUAGE_TOOLCHAINS.md` for debugger quick reference and `RUNTIME_MODELS.md` for process/signal models.
+
+### Attach Debugger to Running Process
+
+| Language | Command |
+|---|---|
+| C/C++ | `gdb -p <pid>` or `lldb -p <pid>` |
+| Python | `python -m debugpy --listen 5678 --wait-for-client -m [module]` → attach IDE |
+| Rust | `rust-gdb -p <pid>` / `rust-lldb -p <pid>` |
+| Java | Start with `-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005` → attach IDE |
+| .NET | `dotnet-debugger attach <pid>` (VSDBG) |
+| Julia | `Infiltrator.@infiltrate` (insert at source) |
+
+### Capture Core Dump
+
+```bash
+# Enable core dumps
+ulimit -c unlimited
+
+# C/C++/Rust: run until crash, then
+gdb ./binary core
+
+# Python
+python -c "import faulthandler; faulthandler.enable()" myapp.py
+
+# Java: add -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/heap.hprof
+jmap -dump:live,format=b,file=/tmp/heap.hprof <pid>
+```
+
+### Profile in Production (Low Overhead)
+
+| Language | Tool | Overhead |
+|---|---|---|
+| C/C++ | `perf record -g -p <pid>` | <5% |
+| Python | `py-spy record -o flame.svg --pid <pid>` | <5% |
+| Rust | `samply record ./binary` | <5% |
+| Java | `async-profiler -d 30 -f flame.html <pid>` | <3% |
+| .NET | `dotnet-trace collect -p <pid>` | <5% |
+| Julia | `Profile.@profile` + `ProfileView.view()` | <5% |
+
+### Notebook / Kernel Debug
+
+```bash
+# List running kernels
+jupyter notebook list
+ls ~/.local/share/jupyter/runtime/kernel-*.json
+
+# Kill a stalled kernel
+kill -9 <kernel-pid>
+
+# Clear all kernel connections
+jupyter notebook stop
+```
+
+### JVM Thread Dump
+
+```bash
+# SIGQUIT sends thread dump to stdout
+kill -3 <jvm-pid>
+
+# Or via jstack
+jstack <pid> > /tmp/threaddump.txt
+```
+
+### .NET GC Dump
+
+```bash
+dotnet-gcdump collect -p <pid> -o /tmp/app.gcdump
+dotnet-gcdump report /tmp/app.gcdump
+```

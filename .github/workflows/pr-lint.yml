@@ -1,0 +1,147 @@
+name: PR Lint — Placeholder & Version Check
+
+on:
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  placeholder-check:
+    name: Detect Unsubstituted Placeholders
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Get changed files
+        id: changed
+        run: |
+          git diff --name-only origin/${{ github.base_ref }}...HEAD > changed_files.txt
+          echo "Changed files:"
+          cat changed_files.txt
+
+      - name: Scan for placeholders
+        id: scan
+        run: |
+          PATTERNS='\[PROJECT_NAME\]\|\[STACK\]\|\[LANGUAGE\]\|\[YYYY-MM-DD\]\|\[ORG\]\|\[repo\]\|\[org\]'
+          FINDINGS=""
+          while IFS= read -r file; do
+            if [ -f "$file" ]; then
+              MATCHES=$(grep -n "$PATTERNS" "$file" 2>/dev/null || true)
+              if [ -n "$MATCHES" ]; then
+                FINDINGS="${FINDINGS}\n**${file}:**\n\`\`\`\n${MATCHES}\n\`\`\`\n"
+              fi
+            fi
+          done < changed_files.txt
+
+          if [ -n "$FINDINGS" ]; then
+            echo "findings=true" >> "$GITHUB_OUTPUT"
+            printf "%b" "$FINDINGS" > placeholder_findings.txt
+          else
+            echo "findings=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Comment on PR — placeholders (warning only — does not block merge)
+        if: steps.scan.outputs.findings == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const findings = fs.readFileSync('placeholder_findings.txt', 'utf8');
+            const body = [
+              '## ⚠️ Unsubstituted Placeholders Detected',
+              '',
+              'The following files in this PR contain template placeholders that may need to be filled in:',
+              '',
+              findings,
+              '---',
+              '_This is a warning only and does not block merge. Placeholders are intentional in template files._',
+            ].join('\n');
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body,
+            });
+
+  node-version-check:
+    name: Node.js Version EOL Check
+    runs-on: ubuntu-latest
+    # Warning only — always runs on PR, does not block merge.
+    # Note: GitHub Actions does not support per-job path filters; filtering by changed files
+    # requires an external action (dorny/paths-filter). The overhead (~30s) does not justify
+    # the dependency — US-DH-03 accepted as Won't Do. See DL-015.
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Check Node.js engines field for EOL versions
+        id: nodecheck
+        run: |
+          # EOL Node.js major versions (update quarterly — April/October release cadence)
+          EOL_VERSIONS="0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20"
+
+          ENGINES=$(node -e "
+            try {
+              const p = JSON.parse(require('fs').readFileSync('tooling/package.json','utf8'));
+              console.log(p.engines?.node ?? '');
+            } catch { console.log(''); }
+          ")
+
+          if [ -z "$ENGINES" ]; then
+            echo "eol_found=false" >> "$GITHUB_OUTPUT"
+            echo "No engines.node field in tooling/package.json — skipping check."
+            exit 0
+          fi
+
+          echo "engines.node: $ENGINES"
+
+          EOL_FOUND=""
+          for major in $EOL_VERSIONS; do
+            # match >=N, ^N, ~N, =N, Nx, N. at word boundary
+            if echo "$ENGINES" | grep -qE "(^|[^0-9])${major}([^0-9]|$)"; then
+              EOL_FOUND="${EOL_FOUND}${major} "
+            fi
+          done
+
+          if [ -n "$EOL_FOUND" ]; then
+            echo "eol_found=true"  >> "$GITHUB_OUTPUT"
+            echo "eol_majors=$EOL_FOUND" >> "$GITHUB_OUTPUT"
+          else
+            echo "eol_found=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Comment on PR — Node.js EOL warning (does not block merge)
+        if: steps.nodecheck.outputs.eol_found == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const majors = '${{ steps.nodecheck.outputs.eol_majors }}'.trim();
+            const body = [
+              '## ⚠️ Node.js EOL Version Detected in `tooling/package.json`',
+              '',
+              `The \`engines.node\` field references Node.js major version(s): **${majors}**`,
+              '',
+              'These versions have reached End of Life and no longer receive security patches.',
+              '',
+              '| Version | Status | EOL date |',
+              '|---|---|---|',
+              '| Node.js 20 | EOL | 2026-04-30 |',
+              '| Node.js 22 | Maintenance LTS | 2027-04-30 |',
+              '| Node.js 24 | ✅ Active LTS | 2028-04-30 |',
+              '',
+              '**Recommended action:** update `engines.node` to `>=24.0.0` and update CI matrix in `ci.yml`.',
+              '',
+              '> If this version constraint is intentional (e.g. supporting a legacy deployment target),',
+              '> document the decision in `.agent/context/DECISION_LOG.md` and close this warning.',
+              '',
+              '---',
+              '_This is a warning only and does not block merge._',
+            ].join('\n');
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body,
+            });

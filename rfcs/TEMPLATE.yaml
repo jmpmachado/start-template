@@ -1,0 +1,27 @@
+id: RFC-XXX
+title: "Design Doc Title"
+criticality: medium # critical | high | medium | low
+
+governance:
+  # Each field: 0=lowest concern, 10=highest. Linear scale. See GOVERNANCE.md for rubric.
+  # WARNING: low governance AMPLIFIES risk — score 0 means undocumented (most dangerous), not "no issue".
+  completeness: 0       # 0-10
+  security: 0           # 0-10
+  testability: 0        # 0-10
+  rollback: 0           # 0-10
+  observability: 0      # 0-10
+  ownership: 0          # 0-10
+
+complexity:
+  # Each field: 0=lowest concern, 10=highest. Linear scale. See GOVERNANCE.md for rubric.
+  technical: 0          # 0-10
+  critical_deps: 0      # 0-10
+  change_scope: 0       # 0-10
+  tech_novelty: 0       # 0-10
+
+probability:
+  # Each field: 0=lowest concern, 10=highest. Linear scale. See GOVERNANCE.md for rubric.
+  failure_history: 0    # 0-10
+  team_maturity: 5      # 0-10 INVERTED: 0-3=senior/low-risk, 4-6=mixed, 7-10=junior/high-risk. See GOVERNANCE.md §VI
+  requirement_ambiguity: 0  # 0-10
+  deadline_pressure: 0  # 0-10

@@ -1,0 +1,46 @@
+# STATUS: optional — activate by setting PROJECT_STACK=rust in CONFIGURE.md. Dormant until then.
+# ci-rust.yml — Rust CI lane for child projects with PROJECT_STACK=rust.
+# Activated by ci-matrix.yml via workflow_call. Not triggered directly.
+# Runs: cargo fmt + clippy + cargo test, matrix stable/beta.
+name: CI — Rust
+
+on:
+  workflow_call:
+
+jobs:
+  rust:
+    name: Rust ${{ matrix.toolchain }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        toolchain: [stable, beta]
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install Rust ${{ matrix.toolchain }}
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.toolchain }}
+          components: rustfmt, clippy
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ matrix.toolchain }}-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-cargo-${{ matrix.toolchain }}-
+
+      - name: Format check
+        run: cargo fmt --all -- --check
+
+      - name: Clippy
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+      - name: Test
+        run: cargo test --all-features
