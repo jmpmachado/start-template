@@ -1,8 +1,8 @@
-# Engineering Template - start-project
+# Engineering Template - [PROJECT_NAME]
 
-Beginner-friendly engineering template with an HTML5+CSS+JS frontend, a .NET 9 Minimal API backend, and a governance layer built around `AGENTS.md`, CI, `memory.json`, and `AGILE_CONFIG.md`.
+Beginner-friendly, stack-agnostic engineering template with a modular frontend/backend structure and a governance layer built around `AGENTS.md`, CI, `memory.json`, and `AGILE_CONFIG.md`.
 
-Use this directory as the starting point for a new `start-project` adoption or as the baseline for a derived project module.
+Use this directory as the starting point for a new `[PROJECT_NAME]` adoption or as the baseline for a derived project module.
 
 ---
 

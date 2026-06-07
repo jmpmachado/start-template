@@ -9,7 +9,7 @@
 
 ### What you need
 
-> 📖 **Full install guide:** [TOOLING_SETUP.md](TOOLING_SETUP.md) — Node.js, .NET 9, and Python with winget one-liners and troubleshooting.
+> 📖 **Full install guide:** [TOOLING_SETUP.md](TOOLING_SETUP.md) — Node.js and .NET 9 with winget one-liners and troubleshooting.
 
 **Node.js tooling (governance, lint, tests) — mandatory:**
 
@@ -45,17 +45,6 @@ dotnet --version   # 9.x.x
 ```
 
 > Full guide (VS2022 Build Tools, manual download, VS Installer): [DOTNET_SETUP.md §2](DOTNET_SETUP.md)
-
-**Python ≥ 3.10 — optional (only for `infra/scripts/`):**
-
-| Tool | Minimum | Check | Install |
-| :--- | :--- | :--- | :--- |
-| Python | 3.10+ | `python --version` | `winget install --id Python.Python.3.12` |
-| pip | bundled | `pip --version` | bundled with Python |
-| pyyaml | — | `python -c "import yaml"` | `pip install pyyaml` |
-
-> Not needed to run the frontend or backend. Only required for `infra/scripts/risk_engine.py` and `wizard.py`.
-> Full guide: [TOOLING_SETUP.md §3](TOOLING_SETUP.md)
 
 ### Recommended editor setup
 

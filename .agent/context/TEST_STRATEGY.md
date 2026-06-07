@@ -30,8 +30,8 @@
 
 ## 3. Unit Tests
 
-**Framework:** `[Vitest / Jest / pytest / RSpec / go test]`
-**Location:** `tests/unit/` or co-located `*.test.ts` next to source file.
+**Framework:** Vitest (Frontend), xUnit (Backend)
+**Location:** `tests/unit/` (Frontend) or `*.Tests` project (Backend).
 
 ### Rules
 
@@ -131,7 +131,7 @@ Full framework: `LOAD_TESTING_FRAMEWORK.md`.
 | :---------------- | :----------------------------------- | :------------------------------ |
 | Database          | Mock repository interface            | Real DB (test schema)           |
 | Cache             | In-memory stub                       | Real Redis (test keyspace)      |
-| External HTTP API | Mock with `[msw / nock / httpretty]` | Real or contract-verified stub  |
+| External HTTP API | Mock with MSW / WireMock.Net | Real or contract-verified stub  |
 | File system       | In-memory FS or temp dir             | Temp dir, cleaned in `afterAll` |
 | Clock / timers    | `vi.useFakeTimers()`                 | Real clock                      |
 | Message queue     | In-memory stub                       | Real queue (test topic)         |
@@ -179,145 +179,60 @@ Flaky test quarantine process:
 
 ---
 
-## 11. Per-Language Test Framework Reference
+## 11. Stack Test Framework Reference
 
-See `LANGUAGE_TOOLCHAINS.md` for toolchain setup. This section maps framework concepts across languages.
+This section maps testing concepts across our selected project stacks.
 
 ### Unit Test Frameworks
 
-| Language | Framework | Test file convention | Run command |
+| Stack | Framework | Test file convention | Run command |
 |---|---|---|---|
-| C | `CTest` + `Unity` / `cmocka` | `test_*.c` | `ctest --output-on-failure` |
-| C++ | `Catch2`, `GoogleTest`, `doctest` | `*_test.cpp` / `*_spec.cpp` | `ctest` / `./test_runner` |
-| Fortran | `pFUnit`, `Vegetables` | `test_*.f90` | `fpm test` |
-| Python | `pytest` | `test_*.py` / `*_test.py` | `pytest` |
-| Rust | Built-in (`#[test]`) | inline in `src/` + `tests/` | `cargo test` |
-| Java | `JUnit 5` | `*Test.java` | `mvn test` / `./gradlew test` |
-| .NET | `xUnit` / `NUnit` | `*Tests.cs` | `dotnet test` |
-| R | `testthat` | `test-*.R` in `tests/testthat/` | `devtools::test()` |
-| Lua | `busted` | `*_spec.lua` | `busted` |
-| Julia | `Test.jl` + `Aqua.jl` | `test/runtests.jl` | `Pkg.test()` |
-| JupyterLab | `nbval` / `nbmake` | `*.ipynb` | `pytest --nbval` |
-| TypeScript/JS | `Vitest` / `Jest` | `*.test.ts` / `*.spec.ts` | `vitest run` / `jest` |
-| Kotlin | `Kotest` (`FunSpec`, `DescribeSpec`) | `*Test.kt` / `*Spec.kt` | `./gradlew test` |
-| Zig | built-in (`std.testing`) | inline `test "name" { ... }` | `zig build test` |
-| CUDA | `GoogleTest` (host) + `compute-sanitizer` (device) | `*_test.cu` | `ctest`; `compute-sanitizer ./test` |
-| Bash/Shell | `bats-core` | `*.bats` in `tests/shell/` | `bats tests/shell/` |
-| SQL | `pgTAP`, `DuckDB` unit tests | `*.sql` in `tests/sql/` | `pg_prove tests/sql/` |
+| **TypeScript/JS** | `Vitest` / `Jest` | `*.test.ts` / `*.spec.ts` | `vitest run` / `jest` |
+| **.NET** | `xUnit` / `NUnit` | `*Tests.cs` | `dotnet test` |
 
 ### Mocking / Test Doubles
 
-| Language | Library |
+| Stack | Library / Tool |
 |---|---|
-| C/C++ | `cmocka`, `GoogleMock`, `FFF` (fake functions) |
-| Python | `unittest.mock`, `pytest-mock` |
-| Rust | `mockall`, `wiremock-rs` |
-| Java | `Mockito`, `WireMock` |
-| .NET | `Moq`, `NSubstitute` |
-| R | `mockery` |
-| Lua | Manual stubs via metatables |
-| Julia | `Mocking.jl` |
-| TypeScript/JS | `vi.fn()` (Vitest), `jest.mock`, MSW (HTTP) |
-| Kotlin | `MockK`, `Mockito-Kotlin` |
-| Zig | Hand-rolled doubles via comptime |
-| CUDA | Host-side mocks (GoogleMock); device kernels tested directly |
-| Bash/Shell | `bats-mock`; function override via `function name() { ... }` |
-| SQL | Stub schemas via DuckDB; transaction-rollback test isolation |
+| **TypeScript/JS** | `vi.fn()` (Vitest), `jest.mock`, MSW (HTTP contract/mocking) |
+| **.NET** | `Moq`, `NSubstitute`, `WireMock.Net` (HTTP mocking) |
 
 ### Integration & Contract Testing
 
 | Concern | Tool(s) |
 |---|---|
-| HTTP contract | `Pact` (consumer-driven; supports Java, .NET, Python, Rust, Go) |
-| gRPC | `grpc-testing` (Java), `tonic` test server (Rust) |
-| Database | Testcontainers (Java, .NET, Python, Rust, Go) |
+| HTTP contract | `Pact` (consumer-driven contracts; supports .NET and JS) |
+| Database | Testcontainers (.NET and Node.js) |
 | Message queue | Testcontainers + broker image |
 
 ### Property-Based Testing
 
-| Language | Framework |
+| Stack | Framework |
 |---|---|
-| C++ | `rapidcheck` |
-| Python | `hypothesis` |
-| Rust | `proptest`, `quickcheck` |
-| Java | `jqwik` |
-| .NET | `FsCheck` |
-| R | `hedgehog` |
-| Julia | `PropCheck.jl` |
-
-### Sanitizers in Test (C/C++/Rust)
-
-Enable in CI debug builds — never in release:
-
-| Sanitizer | Flag | Detects |
-|---|---|---|
-| ASan | `-fsanitize=address` | Heap/stack/global buffer overflow, UAF, double-free |
-| UBSan | `-fsanitize=undefined` | Integer overflow, misaligned access, null deref |
-| TSan | `-fsanitize=thread` | Data races |
-| MSan | `-fsanitize=memory` | Uninitialized reads |
-| MIRI | `cargo miri test` | UB in Rust unsafe code |
+| **TypeScript/JS** | `fast-check` |
+| **.NET** | `FsCheck` |
 
 ---
 
-## 12. Extended Test Notes — New Languages
+## 12. Extended Test Notes
 
-> Per-language framework rows are integrated in §11 above. This section provides
-> deeper notes (layered test pyramid, GPU specifics, migration discipline).
+This section provides deeper notes on our stack-specific testing environments.
 
 ### TypeScript / JavaScript
 
 | Layer | Tool | Notes |
 |---|---|---|
-| Unit | Vitest / Jest | `vi.fn()` for mocks; `@testing-library/react` for UI |
-| Integration | Supertest / Hono test client | Real HTTP, no mocks |
-| E2E | Playwright | See `E2E_TESTING.md` |
-| Contract | MSW (Mock Service Worker) | API contract tests |
-| Coverage | V8 / Istanbul | `--coverage` flag; `coverageThreshold` in config |
+| Unit | Vitest / Jest | `vi.fn()` for mocks; component unit testing |
+| Integration | Supertest | Real HTTP, integration boundaries |
+| E2E | Playwright | Full browser automation |
+| Contract | MSW (Mock Service Worker) | API contract tests and network interception |
+| Coverage | V8 / Istanbul | `--coverage` flag; coverage threshold enforcement |
 
-### Kotlin
+### .NET (C#)
 
-| Layer | Tool |
-|---|---|
-| Unit | Kotest (`FunSpec`, `DescribeSpec`) |
-| Mocking | MockK |
-| Coverage | Kover (Gradle plugin) |
-| Property | Kotest property testing module |
-
-### Zig
-
-- Built-in test runner: `test "name" { try std.testing.expect(...); }`
-- Run: `zig build test`
-- No external test framework needed; standard library has `std.testing.*`
-
-### CUDA / GPU
-
-| Concern | Tool |
-|---|---|
-| Unit (host) | GoogleTest / Catch2 |
-| Device memory | `compute-sanitizer --tool memcheck` |
-| Race detection | `compute-sanitizer --tool racecheck` |
-| Uninitialized | `compute-sanitizer --tool initcheck` |
-| Performance | `nvprof` / Nsight Systems |
-
-Note: GPU tests require a CUDA-capable runner. Tag CI jobs with `gpu: true` and provide a CPU-only mock path for standard runners.
-
-### Bash / Shell
-
-| Tool | Purpose |
-|---|---|
-| `bats-core` | Unit tests for shell scripts |
-| `shellcheck` | Static analysis (CI-blocking) |
-| `shfmt` | Format verification |
-
-Convention: `set -euo pipefail` in every script; test with `bats tests/shell/`.
-
-### SQL
-
-| Tool | Purpose |
-|---|---|
-| `pgTAP` | PostgreSQL unit tests |
-| `sqlfluff` | Linting and formatting |
-| `Flyway` / `Liquibase` / `Alembic` | Migration testing |
-| `DuckDB` | In-process SQL unit tests (portable) |
-
-Always test migrations against a throwaway DB in CI (docker compose with health check).
+| Layer | Tool | Notes |
+|---|---|---|
+| Unit | xUnit / NUnit | Standard unit tests; `Moq` for dependency mock injection |
+| Integration | WebApplicationFactory | In-memory integration testing for ASP.NET Core Minimal APIs |
+| DB / Containers | Testcontainers.PostgreSql | Spawning real database instances inside containerized integration tests |
+| Coverage | Coverlet | dotnet-coverage / coverlet output parsed in CI |

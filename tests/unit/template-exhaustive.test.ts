@@ -180,7 +180,7 @@ describe('Context File Structure', () => {
 describe('Agent Instruction Coherence', () => {
   const OPERATING_RULES = [
     'AGENTS.md Guard',
-    'Template Neutrality',
+    'Target Stack Consistency',
     'Doc Avoidance Exception',
     'Pre-commit gate',
     'Dependency Guard',

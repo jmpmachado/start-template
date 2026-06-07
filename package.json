@@ -17,8 +17,7 @@
     "typecheck": "npm --prefix tooling run typecheck",
     "test:integration": "npm --prefix tooling run test:integration",
     "check-drift": "npm --prefix tooling run check-drift",
-    "rotatelog": "npm --prefix tooling run rotatelog",
-    "test:python": "python -m pytest tests/unit/ -q"
+    "rotatelog": "npm --prefix tooling run rotatelog"
   },
   "engines": {
     "node": ">=24.0.0"

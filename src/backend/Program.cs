@@ -43,5 +43,5 @@ app.MapGet("/health", () => new
     }
 });
 
-// Run application on http://localhost:5000 by default
-app.Run("http://localhost:5000");
+// Run application on http://localhost:5000 and https://localhost:5001 by default
+app.Run("http://localhost:5000;https://localhost:5001");

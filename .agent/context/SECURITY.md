@@ -148,35 +148,12 @@ Every `unsafe` block requires:
 
 Never use `unsafe` to silence borrow-checker errors — fix the design instead.
 
-### Execution Safety (Python / R / Lua / Julia)
+### .NET Security
 
 | Risk | Mitigation |
 |---|---|
-| `eval()` / `exec()` with untrusted input | Never; use AST parsing or allowlist |
-| `pickle.load()` untrusted data | Never (CWE-502); use `json`/`msgpack` |
-| `subprocess` with shell interpolation | `shell=False`; pass args as list |
-| R `eval(parse(text=...))` untrusted | Sandbox with `evaluate` package; allowlist |
-| Lua `load()` / `loadstring()` untrusted | Sandbox environment; restrict `_G` access |
-| Julia `include()` / `eval()` untrusted | Never eval untrusted strings; use `Meta.parse` + validation |
-
-### JVM / .NET Security (Java / .NET)
-
-| Risk | Mitigation |
-|---|---|
-| Deserialization (Java) | Never deserialize untrusted `ObjectInputStream`; use Jackson/Gson with type allowlist |
-| XXE (Java XML) | Disable external entities: `factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true)` |
-| Reflection abuse | Restrict via `--add-opens` only to required modules (JPMS) |
 | .NET deserialization | Avoid `BinaryFormatter` (deprecated, removed in .NET 9); use `System.Text.Json` with `TypeInfoResolver` for polymorphic types. **Never use `DataContractSerializer` or `NetDataContractSerializer` on untrusted input** (CWE-502) — both allow arbitrary type instantiation; `NetDataContractSerializer` is deprecated and must not be used in new code. |
 | P/Invoke CWE-78 | Validate all strings before passing to native; use `SafeHandle` |
-
-### Notebook Security (JupyterLab / R Markdown / Quarto)
-
-| Risk | Mitigation |
-|---|---|
-| Code injection via magic `%run` | Never `%run` untrusted notebooks |
-| Secrets in cell outputs | `nbstripout` pre-commit; `detect-secrets` scan |
-| Kernel remote access | `--ServerApp.allow_remote_access=False` in production |
-| Arbitrary shell via `!` | Audit all `!` cells; restrict in shared environments |
 
 ### Web / Managed Runtimes (TypeScript / JavaScript)
 
@@ -185,26 +162,6 @@ Never use `unsafe` to silence borrow-checker errors — fix the design instead.
 - Path traversal (CWE-22): canonicalize paths; reject `..` and absolute paths from user input.
 - Open redirect (CWE-601): allowlist destination URLs; never reflect raw `redirect` query params.
 - `tsconfig.json` must enable `strict`, `noImplicitAny`, `noUncheckedIndexedAccess`.
-
-### JVM Kotlin
-
-- Inherits Java JVM rules (see above) plus:
-- Deserialization (CWE-502): never use `ObjectInputStream` on untrusted data; prefer `kotlinx.serialization`.
-- SSRF (CWE-918) in HTTP clients (Ktor/OkHttp): allowlist + RFC-1918 block.
-- JDBC SQLi (CWE-89): always `PreparedStatement` — never string concatenation.
-
-### Systems Languages — Zig
-
-- Out-of-bounds read/write (CWE-125, CWE-787): mitigated in `Debug` and `ReleaseSafe` modes; never ship `ReleaseFast` code paths handling untrusted input without independent fuzzing.
-- Allocator hygiene: prefer per-component `GeneralPurposeAllocator` so leaks surface in tests.
-- `unreachable` is UB in release modes — gate behind `std.debug.assert`.
-
-### GPU / Heterogeneous Compute (CUDA / HIP)
-
-- Buffer overflow in kernels (CWE-119): bound every index with `if (idx < N) return;` guard.
-- Race conditions (CWE-362): require `__syncthreads()` before reading shared memory written by peers; verify with `compute-sanitizer --tool racecheck`.
-- Uninitialized device memory (CWE-457): always `cudaMemset` after allocation when correctness depends on zeroing.
-- Pinned host memory leaks: pair every `cudaMallocHost` with `cudaFreeHost`.
 
 ### Shell Scripts (Bash / POSIX sh)
 

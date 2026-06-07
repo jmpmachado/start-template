@@ -322,71 +322,34 @@ redis-cli TTL [key]
 
 ---
 
-## Multi-Language Debug Procedures
+## Debug & Profiling Procedures
 
-See `LANGUAGE_TOOLCHAINS.md` for debugger quick reference and `RUNTIME_MODELS.md` for process/signal models.
+See `LANGUAGE_TOOLCHAINS.md` for toolchain setup.
 
 ### Attach Debugger to Running Process
 
-| Language | Command |
+| Stack | Command / Method |
 |---|---|
-| C/C++ | `gdb -p <pid>` or `lldb -p <pid>` |
-| Python | `python -m debugpy --listen 5678 --wait-for-client -m [module]` → attach IDE |
-| Rust | `rust-gdb -p <pid>` / `rust-lldb -p <pid>` |
-| Java | Start with `-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005` → attach IDE |
-| .NET | `dotnet-debugger attach <pid>` (VSDBG) |
-| Julia | `Infiltrator.@infiltrate` (insert at source) |
+| **TypeScript/JS** | Start Node with `--inspect` or `--inspect-brk` flag and connect via Chrome DevTools or IDE |
+| **.NET** | `dotnet-debugger attach <pid>` (VSDBG) or attach IDE debugger to the process ID |
 
-### Capture Core Dump
+### Capture Dump
 
 ```bash
-# Enable core dumps
-ulimit -c unlimited
+# .NET Core Dump
+dotnet-dump collect -p <pid> -o /tmp/app.dmp
+dotnet-dump analyze /tmp/app.dmp
 
-# C/C++/Rust: run until crash, then
-gdb ./binary core
-
-# Python
-python -c "import faulthandler; faulthandler.enable()" myapp.py
-
-# Java: add -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/heap.hprof
-jmap -dump:live,format=b,file=/tmp/heap.hprof <pid>
+# Node.js Heap Dump
+node --heapsnapshot-near-heap-limit=3 myapp.js
 ```
 
 ### Profile in Production (Low Overhead)
 
-| Language | Tool | Overhead |
+| Stack | Tool | Command / Notes |
 |---|---|---|
-| C/C++ | `perf record -g -p <pid>` | <5% |
-| Python | `py-spy record -o flame.svg --pid <pid>` | <5% |
-| Rust | `samply record ./binary` | <5% |
-| Java | `async-profiler -d 30 -f flame.html <pid>` | <3% |
-| .NET | `dotnet-trace collect -p <pid>` | <5% |
-| Julia | `Profile.@profile` + `ProfileView.view()` | <5% |
-
-### Notebook / Kernel Debug
-
-```bash
-# List running kernels
-jupyter notebook list
-ls ~/.local/share/jupyter/runtime/kernel-*.json
-
-# Kill a stalled kernel
-kill -9 <kernel-pid>
-
-# Clear all kernel connections
-jupyter notebook stop
-```
-
-### JVM Thread Dump
-
-```bash
-# SIGQUIT sends thread dump to stdout
-kill -3 <jvm-pid>
-
-# Or via jstack
-jstack <pid> > /tmp/threaddump.txt
-```
+| **TypeScript/JS** | `clinic` or native profiler | `node --prof myapp.js` or `clinic flame -- node myapp.js` |
+| **.NET** | `dotnet-trace` | `dotnet-trace collect -p <pid>` |
 
 ### .NET GC Dump
 

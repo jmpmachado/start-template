@@ -1,13 +1,13 @@
 # User Guide — Engineering Template
 
-> Language-agnostic engineering framework for AI-assisted projects.
+> Dedicated engineering framework for .NET 9 and HTML5/CSS/JS AI-assisted projects.
 > For bilingual (PT-BR) content, see the project wiki or ask your team lead.
 
 ---
 
 ## 1. What Is This Template?
 
-A reusable governance, documentation, and agile scaffold for projects operated by AI agents (Claude Code, Codex, Copilot) under human supervision. `src/` is intentionally empty — the value is the framework itself.
+A reusable governance, documentation, and agile scaffold for projects operated by AI agents (Claude Code, Codex, Copilot) under human supervision, customized exclusively for a **.NET 9 Minimal API backend** and **HTML5/CSS/JS frontend**.
 
 **Who it is for:** Solo engineers or small teams (1–3 people) who want AI agents working semi-autonomously without losing control of quality, debt, and delivery cadence.
 
@@ -17,8 +17,8 @@ A reusable governance, documentation, and agile scaffold for projects operated b
 
 | Tool | Minimum version | Check |
 | :--- | :--- | :--- |
-| Python | 3.10+ | `python3 --version` |
-| Node.js | 24+ (optional — only for Node projects or `npm test`) | `node --version` |
+| .NET SDK | 9.0+ | `dotnet --version` |
+| Node.js | 24+ | `node --version` |
 | Git | 2.40+ | `git --version` |
 
 ---
@@ -26,14 +26,14 @@ A reusable governance, documentation, and agile scaffold for projects operated b
 ## 3. Quick Start
 
 ```bash
-# 1. Run the adoption wizard
-python3 infra/scripts/wizard.py
+# 1. Install tooling dependencies
+cd tooling && npm install
 
-# 2. Verify (Node projects)
+# 2. Run frontend & tooling tests
 npm test
 
-# 3. Verify (Python tooling)
-npm run test:python
+# 3. Run backend tests
+dotnet test
 ```
 
 ---
@@ -64,7 +64,7 @@ npm run test:python
 
 | Gate | Trigger | Blocks merge? |
 | :--- | :--- | :--- |
-| `ci.yml` | Every push | Yes — lint + typecheck + test |
+| `ci-dotnet.yml` | Every push | Yes — dotnet build + test |
 | `docs-integrity.yml` | Changes to `.agent/context/` or `AGENTS.md` | Yes |
 | `security.yml` | Push to main/master/develop | Yes — npm audit high |
 | `template-drift.yml` | Weekly + push to main | No — observation only |
@@ -78,8 +78,6 @@ npm run test:python
 | :--- | :--- |
 | `npm test` fails with `TypeError: Cannot read properties of undefined` | Run `npm ci --prefix tooling` then retry |
 | `check-drift` reports `BACKLOG.md` > 150 lines | Move completed sprint rows to a project-local archive outside `.agent/context/` |
-| `check-drift` reports `AGILE_CONFIG.md` placeholders | Run `python3 infra/scripts/wizard.py` |
-| `npm run test:python` — no tests found | Ensure `pytest` and `pyyaml` are installed: `pip install pytest pyyaml` |
 
 ---
 

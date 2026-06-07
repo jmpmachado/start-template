@@ -1,7 +1,7 @@
-# TOOLING_SETUP.md — Node.js, Python & .NET Setup
+# TOOLING_SETUP.md — Node.js & .NET Setup
 
 > Install prerequisites for building and running all stacks in this template.
-> **Estimated time:** 5–15 minutes depending on what is already installed.
+> **Estimated time:** 5–10 minutes depending on what is already installed.
 
 ---
 
@@ -11,7 +11,6 @@
 |---|---|---|
 | **Node.js ≥ 24** | Runs `npm test`, `npm run lint`, `npm run check-drift` | ✅ **Mandatory** |
 | **.NET 9 SDK** | Builds and runs the backend API (`src/backend/`) | ✅ Mandatory for backend work |
-| **Python ≥ 3.10** | Runs `infra/scripts/` (risk engine, wizard) | ⚠️ Optional — only if you use those scripts |
 
 ---
 
@@ -31,11 +30,6 @@ winget install --id OpenJS.NodeJS.LTS --accept-package-agreements --accept-sourc
 # After install: open a new terminal and verify
 node --version
 ```
-
-> **Note:** `OpenJS.NodeJS.LTS` installs the LTS release. For the latest Current release (v24+):
-> ```powershell
-> winget install --id OpenJS.NodeJS --accept-package-agreements
-> ```
 
 ### Option B — Official installer
 
@@ -79,58 +73,7 @@ dotnet --version   # expected: 9.x.x
 
 ---
 
-## §3 — Python ≥ 3.10 (Optional — infra scripts only)
-
-Python is **not required** to run the frontend, backend, or Node.js test suite.
-Install it only if you want to use `infra/scripts/` (risk engine, placeholder wizard, install checker).
-
-### Check if already installed
-
-```powershell
-python --version      # expected: 3.10+
-python3 --version     # on some systems
-```
-
-### Option A — winget
-
-```powershell
-winget install --id Python.Python.3.12 --accept-package-agreements --accept-source-agreements
-# After install: open a new terminal and verify
-python --version
-```
-
-### Option B — Official installer
-
-| Platform | URL |
-|---|---|
-| Windows (all) | <https://www.python.org/downloads/> |
-| Direct 3.12 download | <https://www.python.org/downloads/release/python-3120/> |
-
-> ✅ During install: check **"Add Python to PATH"** — this is off by default.
-
-### Option C — Microsoft Store
-
-```powershell
-# From the Windows Store (simpler, auto-updates)
-winget install --id 9NCVDN91XZQP --accept-package-agreements  # Python 3.12
-```
-
-### Verify after install
-
-```powershell
-python --version    # 3.10+ required (3.12 recommended)
-pip --version       # comes with Python
-```
-
-### Install infra script dependencies
-
-```powershell
-pip install pyyaml   # required by risk_engine.py
-```
-
----
-
-## §4 — Full Stack Verify
+## §3 — Full Stack Verify
 
 After installing all tools, run this sequence from the repo root to confirm everything works:
 
@@ -138,7 +81,6 @@ After installing all tools, run this sequence from the repo root to confirm ever
 # 1. Verify runtimes
 node --version        # v24+
 dotnet --version      # 9.x.x
-python --version      # 3.10+ (optional)
 
 # 2. Install Node.js tooling
 cd tooling && npm install
@@ -164,7 +106,7 @@ start src/frontend/index.html
 
 ---
 
-## §5 — Troubleshooting
+## §4 — Troubleshooting
 
 ### `node` not found after install
 
@@ -182,15 +124,6 @@ node --version
 npm config set prefix "$env:APPDATA\npm"
 ```
 
-### `python` not found (Windows)
-
-```powershell
-# Check if it was installed as python3
-python3 --version
-# Or try the Windows alias
-py --version
-```
-
 ### Node version is too old (v18, v20)
 
 ```powershell
@@ -202,14 +135,13 @@ nvm install 24 && nvm use 24
 
 ---
 
-## §6 — Version Compatibility Matrix
+## §5 — Version Compatibility Matrix
 
 | Tool | Minimum | Recommended | Install command |
 |---|---|---|---|
-| Node.js | 22.x | 24.x LTS | `winget install OpenJS.NodeJS.LTS` |
+| Node.js | 24.x | 24.x LTS | `winget install OpenJS.NodeJS.LTS` |
 | npm | 10.x | bundled with Node | — |
 | .NET SDK | 9.0.x | 9.0.314 | `winget install Microsoft.DotNet.SDK.9` |
-| Python | 3.10 | 3.12 | `winget install Python.Python.3.12` |
 | Windows | 10 1903+ | 11 22H2+ | — |
 
 ---

@@ -17,13 +17,13 @@ import { fileURLToPath } from 'node:url';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const CONFIGURE = resolve(ROOT, 'CONFIGURE.md');
 
-const VALID_STACKS = new Set(['node', 'python', 'go', 'rust', 'none']);
-const DEFAULT_STACK = 'node';
+const VALID_STACKS = new Set(['node', 'dotnet', 'none']);
+const DEFAULT_STACK = 'dotnet';
 
 /**
  * Reads CONFIGURE.md and returns the PROJECT_STACK value.
  * @param {string} [configurePath] - Path to CONFIGURE.md (defaults to repo root).
- * @returns {string} One of: 'node' | 'python' | 'go' | 'rust' | 'none'. Defaults to 'node'.
+ * @returns {string} One of: 'node' | 'dotnet' | 'none'. Defaults to 'dotnet'.
  */
 export function detectStack(configurePath = CONFIGURE) {
   if (!existsSync(configurePath)) return DEFAULT_STACK;
@@ -32,7 +32,10 @@ export function detectStack(configurePath = CONFIGURE) {
   const match = content.match(/^PROJECT_STACK\s*=\s*(\S+)/m);
   if (!match) return DEFAULT_STACK;
 
-  const value = match[1].trim().toLowerCase();
+  let value = match[1].trim().toLowerCase();
+  if (value === '.net') {
+    value = 'dotnet';
+  }
   return VALID_STACKS.has(value) ? value : DEFAULT_STACK;
 }
 

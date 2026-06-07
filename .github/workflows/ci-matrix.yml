@@ -2,7 +2,7 @@
 # Reads PROJECT_STACK from CONFIGURE.md via detect-stack.js and triggers
 # only the relevant per-language workflow. ci.yml (Node) runs independently.
 #
-# Supported stacks: node | python | go | rust | none
+# Supported stacks: node | dotnet | none
 # Add new stacks by: (1) creating ci-<stack>.yml, (2) adding a job below.
 name: CI Matrix
 
@@ -34,28 +34,16 @@ jobs:
           echo "stack=$stack" >> $GITHUB_OUTPUT
           echo "Detected stack: $stack"
 
-  python:
-    name: Python CI
+  dotnet:
+    name: .NET CI
     needs: detect
-    if: needs.detect.outputs.stack == 'python'
-    uses: ./.github/workflows/ci-python.yml
-
-  go:
-    name: Go CI
-    needs: detect
-    if: needs.detect.outputs.stack == 'go'
-    uses: ./.github/workflows/ci-go.yml
-
-  rust:
-    name: Rust CI
-    needs: detect
-    if: needs.detect.outputs.stack == 'rust'
-    uses: ./.github/workflows/ci-rust.yml
+    if: needs.detect.outputs.stack == 'dotnet'
+    uses: ./.github/workflows/ci-dotnet.yml
 
   summary:
     name: Stack CI summary
     runs-on: ubuntu-latest
-    needs: [detect, python, go, rust]
+    needs: [detect, dotnet]
     if: always()
     steps:
       - name: Fail if detect failed
@@ -67,9 +55,7 @@ jobs:
       - name: Fail if triggered job failed
         # Only fail on jobs that actually ran (not skipped). Skipped = stack not selected.
         if: |
-          (needs.python.result == 'failure') ||
-          (needs.go.result == 'failure') ||
-          (needs.rust.result == 'failure')
+          (needs.dotnet.result == 'failure')
         run: |
           echo "::error::One or more per-stack CI jobs failed."
           exit 1
@@ -77,6 +63,4 @@ jobs:
       - name: Report
         run: |
           echo "Stack: ${{ needs.detect.outputs.stack }}"
-          echo "Python: ${{ needs.python.result || 'skipped' }}"
-          echo "Go:     ${{ needs.go.result || 'skipped' }}"
-          echo "Rust:   ${{ needs.rust.result || 'skipped' }}"
+          echo "Dotnet: ${{ needs.dotnet.result || 'skipped' }}"

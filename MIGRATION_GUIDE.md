@@ -20,9 +20,9 @@
 
 ### Prerequisites
 
-- Python ≥ 3.10, Node ≥ 22 (if your stack is Node)
+- .NET 9 SDK, Node ≥ 24 (tooling)
 - A working git repository with at least one commit
-- 30–60 min uninterrupted
+- 15–30 min uninterrupted
 
 ### Steps
 
@@ -51,7 +51,7 @@
 4. **Verify:**
 
    ```bash
-   npm --prefix tooling test          # 48 tests must pass
+   npm --prefix tooling test          # all tests must pass
    cd tooling && npm install && npm test
    npm run check-drift               # 0 high-severity findings
    ```
@@ -95,7 +95,7 @@ Before touching anything, answer these three questions:
 | `infra/scripts/*.py` | **Take template** — unless you have local modifications | Bug fixes and new features |
 | `src/`, `packages/`, application code | **Always take local** | Template has stubs only |
 | `.agent/memory.json` | **Take local** — it is a superset after any real work | Remote may have stale entries |
-| `rfcs/*.yaml` | **Audit each file** — project-specific RFCs must not go upstream | Template neutrality rule |
+| `rfcs/*.yaml` | **Audit each file** — project-specific RFCs must not go upstream | Target stack consistency rule |
 
 ### Step-by-step
 
@@ -143,12 +143,12 @@ Before touching anything, answer these three questions:
 
 6. **Remove project-specific artefacts** that should not live in the template:
    - RFCs with project/product names → `rfcs/` (move to your project notes)
-   - Any `.md` in Portuguese or with product-specific names (template neutrality rule)
+   - Any `.md` in Portuguese or with product-specific names (target stack consistency rule)
 
 7. **Run full verification:**
 
    ```bash
-   npm --prefix tooling test          # 48 tests must pass
+   npm --prefix tooling test          # all tests must pass
    cd tooling && npm test
    npm run check-drift
    npm audit --audit-level=high  # from repo root

@@ -237,39 +237,10 @@ _PYTHON_STACKS = {"python"}
 _MULTI_STACK = "multi"
 
 
-def run_ci_gate(stack: str = "python") -> bool:
-    """Run the CI gate appropriate for the project stack.
-
-    Python projects run pytest. Non-Python stacks skip pytest (their native
-    toolchain is the gate). Multi-stack runs pytest only when Python test files
-    are present in tests/unit/.
-    """
+def run_ci_gate(stack: str = "dotnet") -> bool:
+    """Run the CI gate appropriate for the project stack."""
     hr("Phase 4 -- CI gate")
-    tests_dir = ROOT / "tests" / "unit"
-
-    if stack in _PYTHON_STACKS:
-        run_pytest = True
-    elif stack == _MULTI_STACK:
-        run_pytest = any(tests_dir.glob("*.py"))
-    else:
-        print(f"  ok  CI gate skipped for '{stack}' stack — use the native toolchain to run tests.")
-        return True
-
-    if not run_pytest:
-        print(f"  ok  CI gate skipped for '{stack}' stack (no Python test files found).")
-        return True
-
-    cmd = [sys.executable, "-m", "pytest", str(tests_dir), "-q"]
-    print(f"\n  -> Running tests ({tests_dir.relative_to(ROOT)})...")
-    result = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True)
-    if result.returncode != 0:
-        print(f"  x  pytest failed (exit {result.returncode})")
-        for line in (result.stdout + result.stderr).splitlines()[-15:]:
-            print(f"     {line}")
-        print("\n  !  CI gate incomplete. Fix the errors above and re-run: python3 -m pytest tests/unit/")
-        return False
-    last = [ln for ln in result.stdout.splitlines() if ln.strip()]
-    print(f"  ok  {last[-1] if last else 'tests passed'}")
+    print(f"  ok  CI gate skipped for '{stack}' stack — use the native toolchain (dotnet test / npm test) to run tests.")
     return True
 
 
@@ -313,7 +284,7 @@ def main() -> None:
     hr("Phase 1 -- Project Identity")
 
     project_name = _ask_required("Project name", seed.get("PROJECT_NAME") or "my-project")
-    stack_options = ["node-ts", "python", "go", "rust", "java", "multi"]
+    stack_options = ["dotnet", "node", "none"]
     seed_stack = seed.get("STACK", "")
     stack_default = stack_options.index(seed_stack) if seed_stack in stack_options else 0
     stack_idx = choose("Primary stack", stack_options, stack_default)

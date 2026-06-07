@@ -102,8 +102,8 @@ describe('Documentation Integrity & Compliance Test', () => {
     ];
 
     const brokenLinks: string[] = [];
-    // Matches relative markdown links: [text](relative/path) — skip http/https/mailto/#anchors
-    const linkRegex = /\[([^\]]+)\]\((?!https?:|mailto:|#)([^)]+)\)/g;
+    // Matches relative markdown links: [text](relative/path) — skip http/https/mailto/file/#anchors
+    const linkRegex = /\[([^\]]+)\]\((?!https?:|mailto:|file:|#)([^)]+)\)/g;
     // Placeholder patterns to skip — these are intentional template examples
     const placeholderPatterns = /^\[|^path$|^\.|^\/\[|^https?|^#|^\s*$/;
 

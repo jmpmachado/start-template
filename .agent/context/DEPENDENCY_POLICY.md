@@ -1,7 +1,7 @@
 # Dependency Policy — start-project
 
 > Governs how dependencies are evaluated, introduced, updated, and retired.
-> Apply this policy before every `npm install` / `pip install` / `cargo add` equivalent.
+> Apply this policy before every `npm install` / `dotnet add package` equivalent.
 > Reactive CVE scanning (AUDIT_REPORT.md) is necessary but not sufficient — this policy
 > adds the proactive layer.
 
@@ -30,11 +30,11 @@ over novel, feature-rich alternatives with < 2 years of history.
 Run this before every new dependency PR:
 
 ```
-[ ] Checked npm/PyPI/crates.io for weekly download count (signal of community health)
+[ ] Checked npm/NuGet for weekly download count (signal of community health)
 [ ] Checked open issues count and last maintainer response date
 [ ] Checked if the library is a single-maintainer project (bus factor = 1)
-[ ] Ran CVE scan: npm audit / pip audit / cargo audit
-[ ] Checked license via: license-checker / pip-licenses / cargo license
+[ ] Ran CVE scan: npm audit / dotnet list package --vulnerable
+[ ] Checked license via: license-checker / dotnet-project-licenses
 [ ] Verified the dependency is not already provided by an existing library in the project
 [ ] Pinned to a specific version (not a floating range like ^1.x in production)
 ```
@@ -66,7 +66,7 @@ Run this before every new dependency PR:
 | Dev dependencies        | Caret range (`^1.2.3`)  | Easier tooling updates, no runtime risk  |
 | Security patches        | Immediate update        | Override pinning for P0/P1 CVEs          |
 
-**Lockfile policy:** always commit `package-lock.json` / `Pipfile.lock` / `Cargo.lock`.
+**Lockfile policy:** always commit `package-lock.json` / `packages.lock.json`.
 Never `.gitignore` lockfiles.
 
 ---
@@ -89,7 +89,7 @@ A dependency is a candidate for removal when:
 - No release in > 24 months.
 - Maintainer has publicly archived the repository.
 - A P0/P1 CVE exists with no upstream fix after 30 days.
-- The dependency is no longer used (verify with `depcheck` / `pip-check` / `cargo machete`).
+- The dependency is no longer used (verify with `depcheck` / `dotnet-unused`).
 - A significantly better alternative exists and migration cost is justified.
 
 **Removal process:**
@@ -125,21 +125,8 @@ A dependency is a candidate for removal when:
 
 | Language | Registry | Lockfile | Audit command | CVE source |
 |---|---|---|---|---|
-| C/C++ (vcpkg) | vcpkg registry | `vcpkg.json` + `vcpkg-lock.json` | `vcpkg x-check-support` | OSV / NVD |
-| C/C++ (Conan) | ConanCenter | `conanfile.txt` / `conanfile.py` | `conan audit` | NVD |
-| Fortran (fpm) | fpm registry | `fpm.toml` | Manual / OSV scan | OSV |
-| Python (pip) | PyPI | `requirements.txt` / `pyproject.toml` | `pip-audit` / `safety` | PyPA Advisory DB |
-| Python (conda) | conda-forge / Anaconda | `environment.yml` | `conda audit` / `pip-audit` | NVD |
-| Rust | crates.io | `Cargo.lock` | `cargo audit` / `cargo deny` | RustSec Advisory DB |
-| Java (Maven) | Maven Central | `pom.xml` | `mvn dependency-check:check` | NVD / OSV |
-| Java (Gradle) | Maven Central | `gradle.lockfile` | `./gradlew dependencyCheckAnalyze` | NVD |
 | .NET | NuGet | `packages.lock.json` | `dotnet list package --vulnerable` | GitHub Advisory DB |
-| R | CRAN / Bioconductor | `renv.lock` | `oysteR::audit_installed_r_pkgs()` | OSV |
-| Lua | LuaRocks | `*.rockspec` | Manual / OSV scan | OSV |
-| Julia | Pkg.jl General registry | `Manifest.toml` | `Pkg.audit()` | Julia Security Advisories + OSV |
-| Zig | `build.zig.zon` (URL + hash, no centralized registry) | `build.zig.zon` (content-hash-pinned) | Manual — check OSV and upstream issue tracker | OSV / NVD (search "zig" + package name) |
-
-> **Zig note (as of 2026):** Zig has no centralized package registry. All dependencies are fetched by URL with a hash pin in `build.zig.zon`. Treat any dependency change as requiring a full manual audit. Verify the URL origin and inspect source diffs for any upstream changes.
+| TypeScript/JS | npm | `package-lock.json` | `npm audit --audit-level=high` | GitHub Advisory DB |
 
 ### Toolchain Integrity
 
@@ -147,19 +134,9 @@ Pin compiler/toolchain versions in CI to prevent supply-chain attacks on the bui
 
 | Tool | Pin mechanism |
 |---|---|
-| GCC / Clang | CI image tag + `apt-get install gcc=[version]` |
-| LLVM | `llvm-[version]` package; verify with `sha256sum` |
-| Rust toolchain | `rust-toolchain.toml` committed in repo |
-| Python interpreter | `.python-version` (pyenv) or `PYTHON_VERSION` in CI matrix |
-| Java JDK | `uses: actions/setup-java@v4` with explicit `java-version` |
 | .NET SDK | `global.json` `sdk.version` field |
-| R | `r-version` in CI matrix; `renv` for packages |
-| TypeScript/JS | npm / pnpm / Yarn | `package-lock.json` / `pnpm-lock.yaml` | `npm audit` | GitHub Advisory DB |
-| Kotlin | Maven Central / JitPack | `gradle.lockfile` | `./gradlew dependencyCheckAnalyze` | NVD |
-| Zig | `build.zig.zon` | Content-addressed hash (built-in) | Manual review | — |
-| CUDA | NVIDIA NGC / CUDA Toolkit | `CMakeLists.txt` pinned version | `compute-sanitizer` | NVIDIA Security Bulletins |
-| Bash/Shell | System packages | `apt.lock` / `Brewfile` | `trivy fs` | CVE databases |
-| SQL | DB engine / migration tools | Flyway/Liquibase version in CI | `snyk test` (ORM deps) | NVD |
+| TypeScript/JS | Node version in `package.json` engines and GHA setups |
+| Bash/Shell | `apt.lock` / `Brewfile` |
 
 ---
 
@@ -216,7 +193,7 @@ Run Renovate during:
 If a transitive dep has a CVE and direct dep hasn't updated:
 
 1. Verify exploitability in our context (not all CVEs apply).
-2. If exploitable: pin the transitive (via `overrides` in `package.json`, `[patch]` in `Cargo.toml`, etc.).
+2. If exploitable: pin the transitive (via `overrides` in `package.json` or pinning the package dependency in `.csproj`).
 3. Open upstream issue at direct dep; track in `DECISION_LOG.md`.
 4. Re-evaluate weekly until upstream catches up.
 

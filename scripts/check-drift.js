@@ -24,6 +24,7 @@ const CONFIGURE_EXCLUDE = [
   'CONTRIBUTING.md',
   'rfcs/TEMPLATE.yaml',
   'scripts/check-drift.js',                           // this file
+  'utils',                                            // integrated third-party utilities
   '.agent/context/AGILE_GUIDE.md',                    // template doc — [CONFIGURE] is instructional
   'tests/unit/agile-config.test.ts',                  // test fixture — [CONFIGURE] strings are the expected values under test, not unfilled placeholders
   '.claude/commands/map-lint.md',                     // describes [CONFIGURE] as a pattern to detect, not an unfilled field
@@ -141,9 +142,9 @@ function checkAgileConfigFilled() {
   const content = readFileSync(configPath, 'utf8');
   const count = (content.match(/\[CONFIGURE\]/g) ?? []).length;
   if (count >= 10) {
-    crack('high', '.agent/context/AGILE_CONFIG.md', `wizard never run — ${count} unfilled [CONFIGURE] placeholders; run "python3 infra/scripts/wizard.py" (see MIGRATION_GUIDE.md §A step 3)`);
+    crack('high', '.agent/context/AGILE_CONFIG.md', `template not configured — ${count} unfilled [CONFIGURE] placeholders; configure manually in .agent/context/AGILE_CONFIG.md (see MIGRATION_GUIDE.md)`);
   } else if (count > 0) {
-    crack('medium', '.agent/context/AGILE_CONFIG.md', `contains ${count} unfilled [CONFIGURE] placeholder(s) — run "python infra/scripts/wizard.py" or fill manually`);
+    crack('medium', '.agent/context/AGILE_CONFIG.md', `contains ${count} unfilled [CONFIGURE] placeholder(s) — fill manually`);
   }
 }
 

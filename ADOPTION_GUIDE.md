@@ -1,7 +1,7 @@
 # Adoption Guide
 
-> Choose a profile, run the wizard, review required files, then define Sprint 00.
-> Full knowledge base index: `AGENTS.md`. Wizard: `python3 infra/scripts/wizard.py`.
+> Choose a profile, configure AGILE_CONFIG.md manually, review required files, then define Sprint 00.
+> Full knowledge base index: `AGENTS.md`.
 
 ---
 
@@ -47,19 +47,23 @@ Upgrade path: `founder → team → public`. Adopt the next profile before onboa
 | `E2E_TESTING.md` | — | ✅ | ✅ | |
 | `LOAD_TESTING_FRAMEWORK.md` | — | — | ✅ | |
 
-Legend: ✅ required · — omit for this profile (wizard removes it automatically)
+Legend: ✅ required · — optional for this profile
 
 ---
 
-## Node.js tooling (optional)
+## Tooling Execution
 
-Node is only needed if your project uses it as a runtime or you want the JS test suite:
+To install dependencies and run tests:
 
 ```bash
 cd tooling && npm install && npm test
 ```
 
-Set `TOOLING_NODE=false` in `CONFIGURE.md` to skip Node checks entirely.
+For .NET backend tests:
+
+```bash
+dotnet test
+```
 
 ---
 
@@ -67,4 +71,3 @@ Set `TOOLING_NODE=false` in `CONFIGURE.md` to skip Node checks entirely.
 
 - `START_HERE.md` — 5-step path from clone to first sprint
 - `AGENTS.md` — full context file index
-- `infra/scripts/profiles.yaml` — machine-readable profile definitions consumed by the wizard

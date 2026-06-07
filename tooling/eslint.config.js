@@ -61,6 +61,6 @@ export default tseslint.config(
     },
   },
   {
-    ignores: ['dist/', 'node_modules/', 'coverage/', '.claude/', '.agent/skills/'],
+    ignores: ['dist/', 'node_modules/', 'coverage/', '.claude/', '.agent/skills/', 'utils/', '../utils/'],
   },
 );

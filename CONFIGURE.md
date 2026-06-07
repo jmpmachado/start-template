@@ -38,13 +38,11 @@ Active workflows when `CI_PROFILE=full`:
 | Workflow | Purpose |
 | :--- | :--- |
 | `ci.yml` | Lint + typecheck + test (Node 24) |
-| `ci-matrix.yml` | Routes to per-language CI based on PROJECT_STACK |
-| `ci-python.yml` | Python lane (pytest + ruff) |
-| `ci-go.yml` | Go lane (vet + staticcheck + test) |
-| `ci-rust.yml` | Rust lane (fmt + clippy + test) |
+| `ci-matrix.yml` | Routes to .NET CI based on PROJECT_STACK |
+| `ci-dotnet.yml` | .NET lane (restore + build + test) |
 | `docs-integrity.yml` | AGENTS.md bidirectional guard + markdown lint |
 | `lint-all.yml` | lint + typecheck + lint:md on push/PR |
-| `security.yml` | npm audit + pip-audit |
+| `security.yml` | npm audit + NuGet audit |
 | `risk-check.yml` | RFC YAML risk scoring (blocks merge if score ≥ 60) |
 | `pr-lint.yml` | Placeholder detection + Node EOL check (warning only) |
 | `template-drift.yml` | Weekly health scan — Node EOL, placeholders, backlog |
@@ -61,21 +59,15 @@ Child projects that want minimal CI: copy only `ci.yml` and `docs-integrity.yml`
 
 Controls which per-language CI workflow is activated by `ci-matrix.yml`.
 
-| Value | CI workflow triggered | Wizard CI gate |
+| Value | CI workflow triggered | Description |
 | :--- | :--- | :--- |
-| `PROJECT_STACK=node` | `ci.yml` (default — already active) | Skips pytest; npm test is the gate |
-| `PROJECT_STACK=node-ts` | `ci.yml` | Skips pytest; npm test is the gate |
-| `PROJECT_STACK=python` | `ci-python.yml` (pytest + ruff, matrix 3.11/3.12) | Runs pytest |
-| `PROJECT_STACK=go` | `ci-go.yml` | Skips pytest; go test is the gate |
-| `PROJECT_STACK=rust` | `ci-rust.yml` | Skips pytest; cargo test is the gate |
-| `PROJECT_STACK=java` | *(add ci-java.yml manually)* | Skips pytest |
-| `PROJECT_STACK=multi` | All applicable lanes run in parallel | Runs pytest only if `tests/unit/*.py` files exist; otherwise skips |
-| `PROJECT_STACK=none` | No per-language CI (template-only repos) | Skips pytest |
+| `PROJECT_STACK=dotnet` | `ci-dotnet.yml` (default) | Builds and tests the C#/.NET backend project |
+| `PROJECT_STACK=none` | No per-language CI | Runs only the Node.js tooling/governance CI |
 
-**Default:** `node` (assumed when absent or unset).
+**Default:** `dotnet` (assumed when absent or unset).
 
 ```env
-PROJECT_STACK=multi
+PROJECT_STACK=dotnet
 ```
 
 ## Other flags (add as needed)
@@ -84,4 +76,4 @@ PROJECT_STACK=multi
 | :--- | :--- | :--- |
 | `TOOLING_NODE` | `true` | Node.js tooling required (see above) |
 | `CI_PROFILE` | `full` | CI lanes active (see above) |
-| `PROJECT_STACK` | `node` | Per-language CI lane (see above) |
+| `PROJECT_STACK` | `dotnet` | Per-language CI lane (see above) |

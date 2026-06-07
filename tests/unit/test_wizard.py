@@ -470,85 +470,15 @@ class TestLoadProfiles:
 # ── run_ci_gate ───────────────────────────────────────────────────────────────
 
 class TestRunCiGate:
-    def test_reports_failure_on_nonzero_exit(self, monkeypatch, capsys):
-        import subprocess
-        fake = type("R", (), {"returncode": 1, "stdout": "FAILED test_foo", "stderr": ""})()
-        monkeypatch.setattr(subprocess, "run", lambda *a, **kw: fake)
-        wizard.run_ci_gate("python")
+    def test_run_ci_gate_skips_and_returns_true(self, capsys):
+        result = wizard.run_ci_gate("dotnet")
+        assert result is True
         out = capsys.readouterr().out
-        assert "failed" in out
+        assert "CI gate skipped" in out
 
-    def test_runs_pytest_on_success(self, monkeypatch, capsys):
-        import subprocess
-        calls = []
-        fake = type("R", (), {"returncode": 0, "stdout": "75 passed in 0.3s", "stderr": ""})()
-        def fake_run(cmd, **kw):
-            calls.append(cmd)
-            return fake
-        monkeypatch.setattr(subprocess, "run", fake_run)
-        wizard.run_ci_gate("python")
-        assert len(calls) == 1
-        assert calls[0][0] == sys.executable
-        assert "-m" in calls[0] and "pytest" in calls[0]
-        out = capsys.readouterr().out
-        assert "75 passed" in out
-
-    def test_uses_sys_executable(self, monkeypatch, capsys):
-        import subprocess
-        fake = type("R", (), {"returncode": 0, "stdout": "1 passed", "stderr": ""})()
-        captured = []
-        monkeypatch.setattr(subprocess, "run", lambda cmd, **kw: captured.append(cmd) or fake)
-        wizard.run_ci_gate("python")
-        assert captured[0][0] == sys.executable
-
-
-# ── run_ci_gate — stack awareness ─────────────────────────────────────────────
-
-class TestRunCiGateStackAwareness:
-    def test_skips_pytest_for_node_ts_stack(self, monkeypatch, capsys):
-        import subprocess
-        calls = []
-        monkeypatch.setattr(subprocess, "run", lambda cmd, **kw: calls.append(cmd))
-        result = wizard.run_ci_gate("node-ts")
-        assert result is True
-        assert calls == [], "pytest must not be invoked for node-ts stack"
-        assert "skipped" in capsys.readouterr().out
-
-    def test_skips_pytest_for_go_stack(self, monkeypatch, capsys):
-        import subprocess
-        calls = []
-        monkeypatch.setattr(subprocess, "run", lambda cmd, **kw: calls.append(cmd))
-        result = wizard.run_ci_gate("go")
-        assert result is True
-        assert calls == []
-
-    def test_skips_pytest_for_none_stack(self, monkeypatch, capsys):
-        import subprocess
-        calls = []
-        monkeypatch.setattr(subprocess, "run", lambda cmd, **kw: calls.append(cmd))
-        result = wizard.run_ci_gate("none")
-        assert result is True
-        assert calls == []
-
-    def test_multi_stack_runs_pytest_when_py_files_present(self, monkeypatch, tmp_path, capsys):
-        import subprocess
-        (tmp_path / "test_foo.py").write_text("# placeholder")
-        monkeypatch.setattr(wizard, "ROOT", tmp_path)
-        (tmp_path / "tests" / "unit").mkdir(parents=True)
-        (tmp_path / "tests" / "unit" / "test_foo.py").write_text("# placeholder")
-        fake = type("R", (), {"returncode": 0, "stdout": "1 passed", "stderr": ""})()
-        calls = []
-        monkeypatch.setattr(subprocess, "run", lambda cmd, **kw: calls.append(cmd) or fake)
-        result = wizard.run_ci_gate("multi")
-        assert result is True
-        assert len(calls) == 1, "pytest must run when Python test files are present"
-
-    def test_multi_stack_skips_pytest_when_no_py_files(self, monkeypatch, tmp_path, capsys):
-        import subprocess
-        monkeypatch.setattr(wizard, "ROOT", tmp_path)
-        (tmp_path / "tests" / "unit").mkdir(parents=True)
-        calls = []
-        monkeypatch.setattr(subprocess, "run", lambda cmd, **kw: calls.append(cmd))
-        result = wizard.run_ci_gate("multi")
-        assert result is True
-        assert calls == [], "pytest must not run when no Python test files are present"
+    def test_run_ci_gate_skips_for_any_stack(self, capsys):
+        for stack in ["dotnet", "node", "none", "python", "multi"]:
+            result = wizard.run_ci_gate(stack)
+            assert result is True
+            out = capsys.readouterr().out
+            assert "CI gate skipped" in out

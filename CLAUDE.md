@@ -18,7 +18,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Purpose
 
-This is a **simplified engineering template** adopted for a TypeScript Node project. The repo contains DDD scaffold stubs in `src/` (`application/`, `domain/`, `infrastructure/`, `interface/`) with empty `index.ts` placeholders. The value is the governance, documentation, and automation framework itself.
+This is a **simplified engineering template** adopted for a .NET 9 Minimal API backend and HTML/CSS/JS frontend project. The value is the governance, documentation, and automation framework itself.
 
 ---
 
@@ -101,7 +101,7 @@ Limit edits strictly to the requested scope. Do not perform unrelated styling, r
 ---
 
 1. **AGENTS.md Guard**: adding, renaming, or deleting a file in `.agent/context/` requires a matching update to `AGENTS.md` in the same commit. The CI test will catch violations.
-2. **Template Neutrality**: keep all `.agent/context/` files generic. Use `start-project`, `node-ts`, `typescript` placeholders.
+2. **Target Stack Consistency**: ensure all codebase files, workflows, and configurations align with the chosen C#/.NET 9 backend and HTML5/CSS/JS frontend stack. Non-relevant programming languages (e.g. Python, Go, Rust, Java) are prohibited in active project logic.
 3. **Doc Avoidance Exception**: `.agent/context/**/*.md` and `AGENTS.md` are the primary knowledge source and must be read before making architecture or governance decisions.
 4. **Pre-commit gate**: `npm run lint && npm run typecheck && npm test` must pass before any task is marked complete.
 5. **Dependency Guard**: do not introduce new npm packages without explicit authorization. See `.agent/context/DEPENDENCY_POLICY.md`.
@@ -111,3 +111,4 @@ Limit edits strictly to the requested scope. Do not perform unrelated styling, r
 9. **Code artifact modes — explicit trigger only**: modes are activated per-turn by explicit user instruction only (`*-construct`, `*-lint`, `*-falsify`).
 10. **Quality by Execution Mode**: before concluding delivery, apply explicit verification. Use `/lint-all` for routine changes and `/full-falsify` for audits.
 11. **Minimal Traceable Memory**: record all architectural decisions, compliance audits, or critical changes in `.agent/memory.json`. Every entry requires `id`, `parent_id` (null for first), `timestamp` (ISO8601), `severity` (`"high"`/`"med"`/`"low"`), `scope` (array of paths), `summary` (≤ 120 chars), `source_commit`. Keep operational notes in `.agent/MEMORY.md`.
+    * **utils/ Directory Exemption:** JavaScript/TypeScript files cloned or integrated under the `utils/` directory (governed by [UTILS_ADDENDUM.md](docs/UTILS_ADDENDUM.md)) are third-party/runtime utility files, not Node.js tooling, and are exempt from the tooling folder restriction. Furthermore, modifications or existence of files in `/utils/` do not represent architectural decisions or critical changes under Rule 11, and do not trigger a requirement to be recorded in `memory.json` nor do they present memory race conditions or violations of the memory directives.

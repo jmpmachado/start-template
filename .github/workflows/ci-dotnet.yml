@@ -1,0 +1,30 @@
+# STATUS: optional — activate by setting PROJECT_STACK=dotnet in CONFIGURE.md. Dormant until then.
+# ci-dotnet.yml — .NET CI lane for child projects with PROJECT_STACK=dotnet.
+# Activated by ci-matrix.yml via workflow_call. Not triggered directly.
+# Runs: dotnet restore, dotnet build, and dotnet test.
+name: CI — .NET
+
+on:
+  workflow_call:
+
+jobs:
+  dotnet:
+    name: .NET Core SDK 9.0.x
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Restore dependencies
+        run: dotnet restore src/backend/backend.csproj
+
+      - name: Build backend
+        run: dotnet build src/backend/backend.csproj --no-restore -c Release
+
+      - name: Run backend tests
+        run: dotnet test tests/backend/backend.tests.csproj --no-build -c Release

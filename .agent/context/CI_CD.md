@@ -289,107 +289,46 @@ See `LANGUAGE_TOOLCHAINS.md` for full toolchain details. Adapt pipeline stages p
 
 | Language | Install command | Cache key |
 |---|---|---|
-| C/C++ | `cmake --preset ci` or `make deps` | `CMakeLists.txt` hash |
-| Fortran | `fpm build` | `fpm.toml` hash |
-| Python | `pip install -r requirements.txt` / `uv sync` / `conda env update` | `requirements.txt` / `pyproject.toml` hash |
-| Rust | `cargo fetch` | `Cargo.lock` hash |
-| Java | `mvn dependency:resolve` / `gradle dependencies` | `pom.xml` / `build.gradle` hash |
 | .NET | `dotnet restore` | `*.csproj` / `packages.lock.json` hash |
-| R | `Rscript -e "renv::restore()"` | `renv.lock` hash |
-| Lua | `luarocks install --only-deps *.rockspec` | `*.rockspec` hash |
-| Julia | `julia --project -e "using Pkg; Pkg.instantiate()"` | `Manifest.toml` hash |
-| TypeScript/JS | `npm ci` / `pnpm install --frozen-lockfile` / `yarn install --immutable` | `package-lock.json` / `pnpm-lock.yaml` hash |
-| Kotlin | `./gradlew dependencies` / `mvn dependency:resolve` | `gradle.lockfile` / `pom.xml` hash |
-| Zig | `zig build --fetch` | `build.zig.zon` hash |
-| CUDA | `cmake -B build -DCMAKE_CUDA_ARCHITECTURES="75;86;89"` | `CMakeLists.txt` hash |
-| Bash/Shell | `apt-get install -y shellcheck shfmt bats` | Image tag |
-| SQL | `flyway -url=$DB_URL info` / `liquibase status` | Migration file hashes |
+| TypeScript/JS | `npm ci` | `package-lock.json` hash |
+| Bash/Shell | `apt-get install -y shellcheck shfmt` | Image tag |
 
 ### Stage: Lint / Format Check
 
 | Language | Command |
 |---|---|
-| C/C++ | `clang-tidy [files] -- [compile_flags]`; `clang-format --dry-run --Werror` |
-| Fortran | `gfortran -Wall -Wextra -fsyntax-only [files]` |
-| Python | `ruff check .`; `ruff format --check .`; `mypy src/` |
-| Rust | `cargo clippy -- -D warnings`; `cargo fmt --check` |
-| Java | `mvn checkstyle:check`; `./gradlew spotlessCheck` |
 | .NET | `dotnet format --verify-no-changes` |
-| R | `Rscript -e "lintr::lint_package()"` |
-| Lua | `luacheck .` |
-| Julia | `julia -e "using JuliaFormatter; format(\".\", overwrite=false)"` |
 | TypeScript/JS | `eslint . --max-warnings 0`; `tsc --noEmit`; `prettier --check .` |
-| Kotlin | `./gradlew detekt ktlintCheck` |
-| Zig | `zig fmt --check .` |
-| CUDA | `clang-tidy --checks='-*,cuda-*' [files]`; `nvcc -Wno-deprecated-gpu-targets` |
 | Bash/Shell | `shellcheck scripts/**/*.sh` (CI-blocking); `shfmt -d scripts/` |
-| SQL | `sqlfluff lint --dialect [dialect] migrations/` |
 
 ### Stage: Test
 
 | Language | Command | Coverage flag |
 |---|---|---|
-| C/C++ | `ctest --test-dir build --output-on-failure` | `-DCMAKE_C_FLAGS=--coverage` |
-| Fortran | `fpm test` | `-fprofile-arcs -ftest-coverage` |
-| Python | `pytest` | `--cov=src --cov-report=xml` |
-| Rust | `cargo test` | `cargo llvm-cov --lcov` |
-| Java | `mvn test` / `./gradlew test` | JaCoCo plugin |
 | .NET | `dotnet test --collect:"XPlat Code Coverage"` | Coverlet |
-| R | `Rscript -e "devtools::test()"` | `covr::package_coverage()` |
-| Lua | `busted --coverage` | `luacov` |
-| Julia | `julia --project -e "using Pkg; Pkg.test()"` | `LocalCoverage.jl` |
 | TypeScript/JS | `vitest run` / `jest` / `playwright test` | `--coverage` (V8 / Istanbul) |
-| Kotlin | `./gradlew test` | Kover (`./gradlew koverReport`) |
-| Zig | `zig build test` | built-in (`std.testing`) |
-| CUDA | `ctest` + `compute-sanitizer --tool memcheck ./tests` | gcov host-side only |
-| Bash/Shell | `bats tests/shell/` | `kcov` (optional) |
-| SQL | `pg_prove tests/sql/` / `pgTAP`; DuckDB unit tests | n/a |
 
 ### Stage: Security Scan
 
 | Language | Command |
 |---|---|
-| C/C++ | `clang-tidy` (security checks); `semgrep --config=p/c`; Valgrind in CI for nightly |
-| Python | `pip-audit`; `bandit -r src/` |
-| Rust | `cargo audit`; `cargo deny check` |
-| Java | `mvn dependency:check` (OWASP); Snyk |
 | .NET | `dotnet list package --vulnerable` |
-| R | `Rscript -e "oysteR::audit_installed_r_pkgs()"` |
-| Lua | Manual review; `luacheck` for injection patterns |
-| Julia | `Pkg.audit()` |
-| TypeScript/JS | `npm audit --audit-level=high`; `snyk test`; `semgrep --config=p/javascript` |
-| Kotlin | `./gradlew dependencyCheckAnalyze`; Snyk Gradle plugin |
-| Zig | Manual review; `zig build` content-addressed hash verification |
-| CUDA | `compute-sanitizer --tool memcheck/racecheck/initcheck`; `nvcc -Xcompiler -fstack-protector-all` |
+| TypeScript/JS | `npm audit --audit-level=high` |
 | Bash/Shell | `shellcheck` (CWE-78); `trivy fs scripts/` |
-| SQL | `sqlfluff` + parameterized-query enforcement; ORM static checks |
 
 ### Stage: Build / Package
 
 | Language | Command |
 |---|---|
-| C/C++ | `cmake --build build --config Release` |
-| Fortran | `fpm install --prefix dist/` |
-| Python | `python -m build` / `uv build` |
-| Rust | `cargo build --release` |
-| Java | `mvn package -DskipTests` / `./gradlew assemble` |
 | .NET | `dotnet publish -c Release --self-contained` |
-| R | `R CMD build .` |
-| Lua | `luarocks make` |
-| Julia | `PackageCompiler.jl` sysimage (optional) |
-| TypeScript/JS | `tsc --noEmit`; `vite build` / `esbuild` / `tsc -p tsconfig.build.json` |
-| Kotlin | `./gradlew assemble` / `mvn package` |
-| Zig | `zig build -Doptimize=ReleaseSafe` |
-| CUDA | `cmake --build build --target all` (requires GPU runner or `--no-cuda` mock) |
-| Bash/Shell | `shellcheck scripts/**/*.sh` (CI-blocking); `shfmt -d .` |
-| SQL | `sqlfluff lint --dialect [dialect] migrations/`; `flyway migrate` (dry-run) |
+| TypeScript/JS | `tsc --noEmit` |
 
 ---
 
 ## 12. GitHub Actions Snippets (New Languages)
 
 > Concrete pipeline-step examples. Matrix coverage for these languages already
-> lives in §10 above; snippets below are drop-in YAML fragments.
+> lives in §11 above; snippets below are drop-in YAML fragments.
 
 ### TypeScript / JavaScript
 
@@ -404,38 +343,6 @@ See `LANGUAGE_TOOLCHAINS.md` for full toolchain details. Adapt pipeline stages p
   run: npm audit --audit-level=high
 ```
 
-### Kotlin
-
-```yaml
-- name: Lint
-  run: ./gradlew detekt ktlintCheck
-- name: Test
-  run: ./gradlew test koverReport
-- name: Security
-  run: ./gradlew dependencyCheckAnalyze
-```
-
-### Zig
-
-```yaml
-- name: Format check
-  run: zig fmt --check .
-- name: Test
-  run: zig build test
-- name: Build (release)
-  run: zig build -Doptimize=ReleaseSafe
-```
-
-### CUDA / GPU
-
-```yaml
-- name: Build CUDA
-  run: cmake -B build -DCMAKE_CUDA_ARCHITECTURES="75;86;89" && cmake --build build
-- name: Memory check (GPU runner only)
-  if: runner.labels contains 'gpu'
-  run: compute-sanitizer --tool memcheck ./build/kernel_tests
-```
-
 ### Bash / Shell
 
 ```yaml
@@ -443,19 +350,6 @@ See `LANGUAGE_TOOLCHAINS.md` for full toolchain details. Adapt pipeline stages p
   run: shellcheck scripts/**/*.sh
 - name: Format check
   run: shfmt -d scripts/
-- name: Test (bats)
-  run: bats tests/shell/
-```
-
-### SQL
-
-```yaml
-- name: Lint migrations
-  run: sqlfluff lint --dialect postgresql migrations/
-- name: Migrate (dry-run)
-  run: flyway -url=$DB_URL -user=$DB_USER -password=$DB_PASS migrate --dry-run
-- name: Schema tests
-  run: psql $DB_URL -f tests/sql/schema_tests.sql
 ```
 
 ---
@@ -464,7 +358,7 @@ See `LANGUAGE_TOOLCHAINS.md` for full toolchain details. Adapt pipeline stages p
 
 **Source:** [`github.com/actions/starter-workflows`](https://github.com/actions/starter-workflows)
 
-Official GitHub repository of CI/CD workflow templates — the same catalog surfaced in the GitHub UI under "New workflow". Use as a **structure reference** for new language profiles (Sprint 17 wizard), not as production-ready configuration.
+Official GitHub repository of CI/CD workflow templates — the same catalog surfaced in the GitHub UI under "New workflow". Use as a **structure reference** for new language profiles, not as production-ready configuration.
 
 ### What to use from starter-workflows
 
@@ -513,10 +407,12 @@ Cross-reference: [`SUPPLY_CHAIN.md`](.agent/context/SUPPLY_CHAIN.md) — SHA pin
 
 ## 14. Active Workflows — Quick Reference
 
-- `ci.yml`: full CI matrix — lint + typecheck + test on Node 22/24.
-- `security.yml`: npm audit + lint + typecheck + test (security gate).
+- `ci.yml`: Node tooling CI — lint + typecheck + test on Node 24.
+- `ci-matrix.yml`: Stack-aware orchestrator, routes to `ci-dotnet.yml` backend pipeline.
+- `ci-dotnet.yml`: .NET backend CI — restore + build + test on .NET 9.
+- `security.yml`: npm audit + NuGet dependency vulnerability audits.
 - `risk-check.yml`: RFC YAML risk gate, blocks on score ≥ 60.
-- `docs-integrity.yml`: AGENTS.md bidirectional guard.
-- `pr-lint.yml`: Node.js EOL check on PRs — warning only.
-- `template-drift.yml`: weekly cron — drift detection, opens GitHub issue on high findings.
-- `core-ci.yml`: minimal CI lane — lint + typecheck + test only. For child projects that want core validation without full governance gates.
+- `docs-integrity.yml`: AGENTS.md bidirectional guard + markdown lint.
+- `pr-lint.yml`: Node.js EOL check + placeholder detection on PRs.
+- `template-drift.yml`: weekly cron — drift detection and memory checks.
+- `lint-all.yml`: developer-facing formatting and lint checker.

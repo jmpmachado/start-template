@@ -9,9 +9,8 @@
 
 **Goal:** Verify environment and establish the repository.
 
-- **Tool requirements:** [ONBOARDING.md §1](ONBOARDING.md) — Node.js v24+, Git 2.40+, Python 3.10+
-- **Wizard:** `python3 infra/scripts/wizard.py` — fills all `[PLACEHOLDER]` values
-- **First run check:** `npm test` + `npm run test:python` must both pass
+- **Tool requirements:** [ONBOARDING.md §1](ONBOARDING.md) — Node.js v24+, .NET 9 SDK, Git 2.40+
+- **First run check:** `npm test` and `dotnet test` must pass
 
 ---
 
@@ -20,7 +19,7 @@
 **Goal:** Select your project profile and activate the right CI lanes.
 
 - **Profile selection:** [CONFIGURE.md](CONFIGURE.md) — lean / standard / enterprise
-- **CI lane activation:** Set `PROJECT_STACK` in `CONFIGURE.md` (`node` / `python` / `go` / `rust`)
+- **CI stack configuration:** Set `PROJECT_STACK` in `CONFIGURE.md` (default is `dotnet`)
 - **Environment variables:** Copy `.env.example` → `.env` and fill required values
 
 ---
@@ -41,7 +40,6 @@
 
 - **Contribution rules:** [CONTRIBUTING.md](CONTRIBUTING.md) — branch, commit, PR, review
 - **Definition of Done:** [.agent/context/DEFINITION_OF_DONE.md](.agent/context/DEFINITION_OF_DONE.md)
-- **Architecture scoring:** [.agent/context/ARCHITECTURE_SCORING_PLAYBOOK.md](.agent/context/ARCHITECTURE_SCORING_PLAYBOOK.md) — score before Sprint 1
 
 ---
 
@@ -52,7 +50,6 @@
 - **Drift detection:** `npm run check-drift` — run before every sprint planning
 - **Knowledge base:** [AGENTS.md](AGENTS.md) — register every new `.agent/context/` file in the same commit
 - **Security:** [.agent/context/SECURITY.md](.agent/context/SECURITY.md) — review threat model each quarter
-- **Risk scoring:** `npm run check-drift` covers RFC risk; `risk-check.yml` runs on every RFC push
 
 ---
 
