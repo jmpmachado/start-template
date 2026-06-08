@@ -153,6 +153,39 @@ describe('RFC Schema Validation', () => {
     }
     expect(missing, `RFC sections with missing keys:\n${missing.join('\n')}`).toEqual([]);
   });
+
+  it('all RFC files have sequential IDs starting from 001 with no gaps and matching filenames', () => {
+    const files = getRfcFiles();
+    if (files.length === 0) return;
+
+    // Parse each RFC and map its number
+    const parsedRfcs = files.map((file) => {
+      // Filename convention check
+      const match = /^RFC-(\d{3})(?:-([\w-]+))?\.yaml$/.exec(file);
+      expect(match, `RFC file name "${file}" does not follow the convention RFC-NNN[-slug].yaml`).not.toBeNull();
+      
+      const numStr = match![1]!;
+      const num = parseInt(numStr, 10);
+      
+      const content = fs.readFileSync(path.join(rfcsDir, file), 'utf-8');
+      const parsed = parseSimpleYaml(content);
+      const internalId = parsed['id'];
+      
+      expect(internalId, `RFC "${file}" is missing its internal "id"`).toBeDefined();
+      expect(internalId, `RFC "${file}" has internal ID "${internalId}" but filename specifies "RFC-${numStr}"`).toBe(`RFC-${numStr}`);
+
+      return { file, num };
+    });
+
+    // Sort by RFC number
+    parsedRfcs.sort((a, b) => a.num - b.num);
+
+    // Verify sequential starting from 1
+    parsedRfcs.forEach((rfc, index) => {
+      const expectedNum = index + 1;
+      expect(rfc.num, `RFC sequence gap or non-sequential starting: file "${rfc.file}" is at position ${expectedNum} but has number ${rfc.num}`).toBe(expectedNum);
+    });
+  });
 });
 
 // ---------------------------------------------------------------------------

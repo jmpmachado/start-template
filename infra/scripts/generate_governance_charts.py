@@ -24,7 +24,7 @@ import numpy as np
 # ─────────────────────────────────────────────────────────────
 
 docs = [
-    "RFC-042\nJob Broker",
+    "RFC-003\nJob Broker",
     "RFC-038\nAuth Service",
     "RFC-035\nData Pipeline",
     "RFC-031\nCluster v1",
@@ -104,7 +104,7 @@ with open("governance_dashboard.png.meta.json", "w") as f:
 # ─────────────────────────────────────────────────────────────
 # DASHBOARD 2: Technical Debt Heatmap — RFC × Dimension
 # ─────────────────────────────────────────────────────────────
-rfcs_short = ["RFC-042", "RFC-038", "RFC-035", "RFC-031", "RFC-029", "RFC-025", "RFC-019"]
+rfcs_short = ["RFC-003", "RFC-038", "RFC-035", "RFC-031", "RFC-029", "RFC-025", "RFC-019"]
 dims_labels = ["Completeness", "Security", "Testability", "Rollback", "Observ.", "Ownership"]
 
 matrix = np.array([completeness, security, testability, rollback, observability, ownership])

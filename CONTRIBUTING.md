@@ -153,7 +153,7 @@ humans and AI agents. Keep it accurate.
 - Finding a new antipattern? → Add it to `ANTIPATTERNS.md`.
 - Making a smaller scoped decision? → Use `rfcs/ADR-TEMPLATE.md` instead of a full RFC.
 
-**RFC file naming convention:** `RFC-NNN.yaml` or `RFC-NNN-short-slug.yaml` where `NNN` is a zero-padded three-digit number (e.g., `RFC-001.yaml`, `RFC-042-auth-redesign.yaml`). The number must be unique and sequential. The `risk-check` CI workflow parses filenames by this pattern.
+**RFC file naming convention:** `RFC-NNN.yaml` or `RFC-NNN-short-slug.yaml` where `NNN` is a zero-padded three-digit number (e.g., `RFC-001.yaml`, `RFC-003-auth-redesign.yaml`). The number must be unique and sequential. The `risk-check` CI workflow parses filenames by this pattern.
 
 CI enforces the `AGENTS.md` guard via `tests/unit/documentation.test.ts`.
 
