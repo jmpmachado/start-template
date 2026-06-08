@@ -1,4 +1,4 @@
-# Architecture: start-project
+# Architecture: [PROJECT_NAME]
 
 > **Template instruction:** Fill in each section for your project.
 > Remove placeholder text and adapt diagrams to your actual system.
@@ -49,20 +49,20 @@
 [Client App]
     |  HTTPS / REST
     v
-[API Server — Node.js / Express]
+[API Server — [REPLACE: e.g. Node.js / Express]]
     |
-    +---> [PostgreSQL]   (primary data store)
-    +---> [Redis]        (session cache, rate-limit counters)
-    +---> [Object Store] (binary assets — S3-compatible)
+    +---> [[REPLACE: Primary DB]]   (primary data store)
+    +---> [[REPLACE: Cache]]        (session cache, rate-limit counters)
+    +---> [Object Store]            (binary assets — S3-compatible)
 ```
 
 **Containers:**
 | Container | Technology | Responsibility |
 | :--- | :--- | :--- |
-| API Server | Node.js 20, Express | Request routing, auth, business logic orchestration |
-| PostgreSQL | PostgreSQL 16 | Persistent relational data |
-| Redis | Redis 7 | Session store, distributed rate-limit counters |
-| Object Store | S3-compatible | Binary asset storage (images, documents) |
+| API Server | [REPLACE: e.g. Node.js 20, Express] | Request routing, auth, business logic orchestration |
+| Primary DB | [REPLACE: e.g. PostgreSQL 16] | Persistent data |
+| Cache | [REPLACE: e.g. Redis 7] | Session store, rate-limit counters |
+| Object Store | [REPLACE: e.g. S3-compatible] | Binary asset storage (images, documents) |
 
 ---
 
@@ -74,7 +74,7 @@
 graph TD
     A[HTTP Request] -->|Bearer token| B[AuthMiddleware]
     B -->|verify JWT| C[TokenService]
-    C -->|cache hit?| D[Redis]
+    C -->|cache hit?| D[[REPLACE: Cache]]
     C -->|cache miss: introspect| E[IdentityProvider]
     B -->|attach principal| F[RequestContext]
     F -->|ownership check| G[AuthzGuard]
@@ -103,10 +103,10 @@ graph TD
 
 ## 6. Execution and Runtime Model
 
-- **Process model:** Single Node.js process per container instance; horizontal scaling via container orchestration.
-- **Concurrency model:** Single-threaded event loop (libuv); CPU-bound tasks offloaded to worker threads.
-- **Resource limits:** 512 MB memory cap, 1 vCPU, 100 max DB connections (pgBouncer pooled), 10s request timeout.
-- **Isolation strategy:** One container per service; no shared mutable state between instances.
+- **Process model:** [REPLACE: e.g. Single process per container instance; horizontal scaling via container orchestration.]
+- **Concurrency model:** [REPLACE: e.g. Single-threaded event loop; CPU-bound tasks offloaded to worker threads.]
+- **Resource limits:** [REPLACE: e.g. memory cap, vCPU count, max DB connections, request timeout — derive from load-test baselines.]
+- **Isolation strategy:** [REPLACE: e.g. One container per service; no shared mutable state between instances.]
 
 ---
 
@@ -115,12 +115,12 @@ graph TD
 ```
 [Client Request]
     --> [TLS Termination]
-    --> [Rate Limit Check (Redis)]
+    --> [Rate Limit Check ([REPLACE: Cache])]
     --> [JWT Validation]
     --> [Input Validation + Sanitization]
     --> [Use Case Handler]
         --> [Domain Logic]
-        --> [Repository (PostgreSQL)]
+        --> [Repository ([REPLACE: Primary DB])]
     --> [Audit Log Entry]
     --> [Response Serialization]
     --> [Client Response]
@@ -134,9 +134,9 @@ All user-supplied data is validated and sanitized before reaching domain logic. 
 
 | Environment | Infrastructure | Notes |
 | :---------- | :------------- | :---- |
-| Development | Docker Compose (local) | All services on localhost; hot-reload enabled |
-| Staging | Container cluster (single region) | Mirrors prod topology; synthetic traffic injected |
-| Production | Container cluster (multi-AZ) | Auto-scale on CPU > 70%; blue-green deploys |
+| Development | [REPLACE: e.g. Docker Compose (local)] | All services on localhost; hot-reload enabled |
+| Staging | [REPLACE: e.g. Container cluster (single region)] | Mirrors prod topology; synthetic traffic injected |
+| Production | [REPLACE: e.g. Container cluster (multi-AZ)] | [REPLACE: e.g. Auto-scale on CPU > 70%; blue-green deploys] |
 
 **Secrets management:** Environment variables injected at runtime from secrets manager (never in image or repo).
 **Network segmentation:** API server in public subnet; DB and cache in private subnet; no direct internet access to data layer.
@@ -147,10 +147,8 @@ All user-supplied data is validated and sanitized before reaching domain logic. 
 
 | Dependency | Version | Purpose | Risk Notes |
 | :--------- | :------ | :------ | :--------- |
-| `express` | 4.x | HTTP framework | Actively maintained; no recent critical CVEs |
-| `jsonwebtoken` | 9.x | JWT sign/verify | Audit before upgrade — breaking changes in major versions |
-| `pg` | 8.x | PostgreSQL client | Low risk; stable API |
-| `ioredis` | 5.x | Redis client | Low risk; actively maintained |
+| [REPLACE: e.g. `express`] | [REPLACE: e.g. 4.x] | [REPLACE: e.g. HTTP framework] | [REPLACE: risk notes] |
+| [REPLACE: e.g. `jsonwebtoken`] | [REPLACE: e.g. 9.x] | [REPLACE: e.g. JWT sign/verify] | [REPLACE: risk notes] |
 
 ---
 
@@ -158,8 +156,8 @@ All user-supplied data is validated and sanitized before reaching domain logic. 
 
 | ID | Decision | Status | Date |
 | :--- | :--- | :--- | :--- |
-| ADR-001 | Use PostgreSQL over NoSQL — relational data model, strong consistency required | Accepted | [YYYY-MM-DD] |
-| ADR-002 | Reject microservices — team size < 5, monolith preferred until clear seam emerges | Accepted | [YYYY-MM-DD] |
+| ADR-001 | [REPLACE: e.g. Use PostgreSQL over NoSQL — relational data model, strong consistency required] | Example | [YYYY-MM-DD] |
+| ADR-002 | [REPLACE: e.g. Reject microservices — team size < 5, monolith preferred until clear seam emerges] | Example | [YYYY-MM-DD] |
 
 > Full ADRs live in `rfcs/` — this table is the quick reference.
 

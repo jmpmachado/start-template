@@ -12,8 +12,8 @@
 | :------------- | :----------------- | :------- | :--------------- | :----------------------------------------------------- |
 | `[api-server]` | HTTP API           | `[3000]` | `GET /health`    | `[systemctl restart api / docker compose restart api]` |
 | `[worker]`     | Background jobs    | —        | `GET /health`    | `[systemctl restart worker]`                           |
-| `[database]`   | Primary data store | `[5432]` | `pg_isready`     | `[systemctl restart postgresql]`                       |
-| `[cache]`      | Session / hot data | `[6379]` | `redis-cli ping` | `[systemctl restart redis]`                            |
+| `[database]`   | Primary data store | `[REPLACE: port]` | `[REPLACE: e.g. pg_isready]`     | `[REPLACE: e.g. systemctl restart postgresql]`  |
+| `[cache]`      | Session / hot data | `[REPLACE: port]` | `[REPLACE: e.g. redis-cli ping]` | `[REPLACE: e.g. systemctl restart redis]`      |
 
 ---
 
@@ -132,11 +132,10 @@ psql -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity
 ### 4.3 Cache scaling
 
 ```bash
-# Check memory usage
-redis-cli info memory | grep used_memory_human
-
-# Flush expired keys (safe — only removes expired entries)
-redis-cli --scan --pattern '*' | xargs redis-cli object idletime
+# [REPLACE: adapt to your cache — examples below]
+# Redis:      redis-cli info memory | grep used_memory_human
+# Memcached:  memcached-tool localhost stats | grep bytes
+# (remove this section if no cache layer)
 ```
 
 ---
@@ -287,15 +286,17 @@ For each third-party integration:
 ## 8. Cache Operations
 
 ```bash
-# Flush specific key pattern (use with caution in production)
-redis-cli --scan --pattern '[prefix]:*' | xargs redis-cli del
+# [REPLACE: adapt to your cache — examples below]
+# Redis:      redis-cli --scan --pattern '[prefix]:*' | xargs redis-cli del
+# Memcached:  echo "flush_all" | nc localhost 11211
 
 # Flush entire cache (use only in emergencies — causes thundering herd)
-redis-cli FLUSHDB
+# Redis:      redis-cli FLUSHDB
+# Memcached:  echo "flush_all" | nc localhost 11211
 
 # Inspect a key
-redis-cli GET [key]
-redis-cli TTL [key]
+# Redis:      redis-cli GET [key]
+# Redis:      redis-cli TTL [key]
 ```
 
 ---
@@ -305,8 +306,8 @@ redis-cli TTL [key]
 | Check    | Command                               | Healthy output          |
 | :------- | :------------------------------------ | :---------------------- |
 | API      | `curl -s https://[domain]/health`     | `{"status":"ok"}`       |
-| Database | `pg_isready -h [host] -U [user]`      | `accepting connections` |
-| Cache    | `redis-cli -h [host] ping`            | `PONG`                  |
+| Database | `[REPLACE: e.g. pg_isready -h [host] -U [user]]`  | `[REPLACE: e.g. accepting connections]` |
+| Cache    | `[REPLACE: e.g. redis-cli -h [host] ping]`        | `[REPLACE: e.g. PONG]`                 |
 | Workers  | `curl -s http://[worker-host]/health` | `{"status":"ok"}`       |
 
 ---
