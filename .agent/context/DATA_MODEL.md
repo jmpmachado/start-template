@@ -1,4 +1,4 @@
-# Data Model — start-project
+# Data Model — [PROJECT_NAME]
 
 > **Template instruction:** Fill in each section for your project.
 > Keep this document in sync with migration files — a divergence is a doc bug.

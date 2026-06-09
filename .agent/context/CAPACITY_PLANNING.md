@@ -1,4 +1,4 @@
-# Capacity Planning — start-project
+# Capacity Planning — [PROJECT_NAME]
 
 > Sizing guidelines and performance expectations for hosting infrastructure.
 

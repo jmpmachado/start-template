@@ -1,6 +1,6 @@
-# Agile Configuration — start-project
+# Agile Configuration — [PROJECT_NAME]
 
-> **Calibrated configuration for the start-project development cycle.**  
+> **Calibrated configuration for the [PROJECT_NAME] development cycle.**  
 > This file contains the calibration parameters for the `AGILE_GUIDE.md`.
 
 ---
@@ -15,10 +15,9 @@ Answer these questions to calibrate your defaults. The answers drive §2–§4.
 
 | Agent | Hours/week | Notes |
 |---|---|---|
-| Gemini | 40h | Primary assistant |
-| Claude Code | 20h | Backup assistant |
+| `[CONFIGURE: agent]` | `[CONFIGURE: Nh]` | `[CONFIGURE: role]` |
 
-**Default session length used for sizing:** 4 hours  
+**Default session length used for sizing:** `[CONFIGURE: e.g. 4 hours]`  
 
 ### 1.2 Review Cadence
 
@@ -35,8 +34,8 @@ Answer these questions to calibrate your defaults. The answers drive §2–§4.
 
 > How many independent modules does this monorepo have?
 
-**Active modules:** 2 (`frontend`, `backend`)  
-**Modules under active development this sprint:** 2
+**Active modules:** `[CONFIGURE: count + names, e.g. 2 (frontend, backend)]`  
+**Modules under active development this sprint:** `[CONFIGURE: count]`
 
 **Rule from `AGILE_GUIDE.md`:** A sprint touches at most 1 module simultaneously.  
 

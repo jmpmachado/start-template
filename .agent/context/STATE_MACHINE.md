@@ -1,4 +1,4 @@
-# State Machines — start-project
+# State Machines — [PROJECT_NAME]
 
 > Formal documentation of states, transitions, and side effects of all subsystems.
 > Criticality level: **mission-critical** — each error state must have explicit handling.

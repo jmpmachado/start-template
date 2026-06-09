@@ -1,4 +1,4 @@
-# Backlog — start-project
+# Backlog — [PROJECT_NAME]
 
 > Active items only for the current project.
 > User stories format: "As a [role], I want [feature], so that [outcome]."

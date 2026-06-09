@@ -1,4 +1,4 @@
-# Engineering Patterns and Antipatterns — start-project
+# Engineering Patterns and Antipatterns — [PROJECT_NAME]
 
 > Living catalog of validated patterns and antipatterns identified during development.
 > Update after each sprint. Complements `BEST_PRACTICES.md` (general guidelines)

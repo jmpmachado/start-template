@@ -173,4 +173,4 @@ Set `lean_mode: false` in `AGILE_CONFIG.md §0` and rerun the wizard, or manuall
 
 ## Placeholders
 
-This file uses no start-project, node-ts, or typescript placeholders — lean governance rules are stack-agnostic. Replace numerical defaults (8 pts, 3 USs, etc.) in `AGILE_CONFIG.md §0` if your team context requires different calibration.
+This file uses no `[PROJECT_NAME]`, `[STACK]`, or `[LANGUAGE]` placeholders — lean governance rules are stack-agnostic. Replace numerical defaults (8 pts, 3 USs, etc.) in `AGILE_CONFIG.md §0` if your team context requires different calibration.

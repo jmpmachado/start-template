@@ -1,6 +1,6 @@
 <!-- STATUS: adoption-time fill-in — populate with real classes after src/ is implemented. All rows below are illustrative placeholders; replace before Sprint 1. -->
 
-# Class Map — start-project
+# Class Map — [PROJECT_NAME]
 
 > **Template instruction:** Document every significant class, service, and module here.
 > Update after each sprint. Stale class maps are worse than no map.

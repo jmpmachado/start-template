@@ -1,4 +1,4 @@
-# Experimentation — start-project
+# Experimentation — [PROJECT_NAME]
 
 > Reference guide for feature flags, A/B testing, and rollout strategies.
 

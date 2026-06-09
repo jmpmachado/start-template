@@ -2,12 +2,27 @@
 
 exports[`Placeholder Validation > context files should not contain unfilled placeholders (except known template files) 1`] = `
 {
-  "AGENT_HANDOFF.md": 1,
+  "AGENT_HANDOFF.md": 2,
+  "AGILE_CONFIG.md": 1,
   "ARCHITECTURE.md": 3,
-  "DATA_MODEL.md": 1,
-  "DEFINITION_OF_DONE.md": 1,
-  "DEPENDENCY_POLICY.md": 1,
+  "BACKLOG.md": 1,
+  "BEST_PRACTICES.md": 1,
+  "CAPACITY_PLANNING.md": 1,
+  "CI_CD.md": 1,
+  "CLASS_MAP.md": 1,
+  "DATA_MODEL.md": 2,
+  "DATA_PRIVACY.md": 1,
+  "DECISION_LOG.md": 1,
+  "DEFINITION_OF_DONE.md": 2,
+  "DEPENDENCY_POLICY.md": 2,
+  "EXPERIMENTATION.md": 1,
+  "LANGUAGE_TOOLCHAINS.md": 1,
+  "PATTERNS.md": 1,
+  "RUNBOOK.md": 1,
+  "SECURITY.md": 1,
   "SECURITY_REVIEW.md": 1,
-  "THREAT_MODEL.md": 1,
+  "STATE_MACHINE.md": 1,
+  "TEST_STRATEGY.md": 1,
+  "THREAT_MODEL.md": 2,
 }
 `;
