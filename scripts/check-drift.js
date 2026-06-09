@@ -34,6 +34,27 @@ const CONFIGURE_EXCLUDE = [
   'MIGRATION_GUIDE.md',                               // troubleshooting table uses [CONFIGURE] as a documented token name
 ];
 
+// ─── identity-pollution scan (ported from project-template, stack-neutral) ───
+// Tokens left behind when an adopter (Visualizador/cristalografia-app) filled the
+// shared template base and the values were never scrubbed back. start-template is
+// currently clean; this scan is preventive — it blocks re-pollution on re-derivation.
+const IDENTITY_TOKENS = [
+  /\bVisualizador\b/,
+  /\bcristalografia\b/i,
+  /\bUS-VIS-\d/,
+];
+// Files allowed to mention identity tokens (history, adoption examples). Keep MINIMAL.
+const IDENTITY_ALLOW = [
+  'node_modules', '.git', 'dist', 'coverage',
+  'docs/utils',                                    // gitignored toolkit — not a deliverable
+  '.agent/context/DECISION_LOG.md',               // historical cleanup record
+  'EXAMPLE_PROJECT.md',                            // worked adoption example
+  'ONBOARDING.md',                                 // narrative example of a derived project
+  'scripts/check-drift.js',                        // this file (token definitions live here)
+  'tests/unit/check-drift.test.ts',               // guard test asserts on these tokens
+  'tests/unit/test_wizard.py',                    // wizard fixtures may inject tokens to verify detection
+];
+
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
 const findings = [];
@@ -150,6 +171,25 @@ function checkAgileConfigFilled() {
 
 /** Emits high/low findings for open Must-Have/Should-Have/Could-Have rows in BACKLOG.md.
  *  MoSCoW precedence: Must/Should open → high; Could open → low; Won't Have always excluded. */
+/** Emits a high finding for each file containing adopter identity tokens
+ *  (Visualizador / cristalografia / US-VIS-NN) outside the documentary allowlist.
+ *  Blocks re-pollution from an incomplete scrub after a derived project copies
+ *  the template and fills it in. */
+function checkIdentityPollution() {
+  walk(ROOT, ['.md', '.yaml', '.yml', '.json', '.ts', '.js', '.py', '.example'], IDENTITY_ALLOW, (full, rel) => {
+    const content = readFileSync(full, 'utf8');
+    const lines = content.split('\n');
+    const hits = [];
+    lines.forEach((l, i) => {
+      if (IDENTITY_TOKENS.some(re => re.test(l))) hits.push(i + 1);
+    });
+    if (hits.length > 0) {
+      crack('high', rel,
+        `contains adopter identity token(s) (Visualizador / cristalografia / US-VIS-) — template was not scrubbed; lines: ${hits.join(', ')}`);
+    }
+  });
+}
+
 function checkBacklogOpenItems() {
   const backlogPath = join(ROOT, '.agent', 'context', 'BACKLOG.md');
   if (!existsSync(backlogPath)) return; // no backlog = no project yet, skip
@@ -158,9 +198,14 @@ function checkBacklogOpenItems() {
 
   // Track which MoSCoW section we are in
   let section = '';
+  let inExample = false; // rows inside <!-- EXAMPLE START..END --> are template scaffolding, not real USs
   const openBySection = { 'Must Have': [], 'Should Have': [], 'Could Have': [] };
 
   for (const line of lines) {
+    if (/<!--\s*EXAMPLE START/.test(line)) { inExample = true; continue; }
+    if (/EXAMPLE END\s*-->/.test(line)) { inExample = false; continue; }
+    if (inExample) continue; // skip the template example sprint rows
+
     const sectionMatch = line.match(/###\s+(Must Have|Should Have|Could Have|Won't Have)/);
     if (sectionMatch) { section = sectionMatch[1]; continue; }
     if (section === "Won't Have") continue; // intentionally open — skip
@@ -355,6 +400,7 @@ console.log('  ' + '─'.repeat(60));
 
 checkNodeVersion();
 checkConfigurePlaceholders();
+checkIdentityPollution();
 checkTestIntegrity();
 checkNpmAudit();
 checkAgileConfigFilled();
