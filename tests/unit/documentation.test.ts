@@ -108,9 +108,14 @@ describe('Documentation Integrity & Compliance Test', () => {
     const placeholderPatterns = /^\[|^path$|^\.|^\/\[|^https?|^#|^\s*$/;
 
     filesToCheck.forEach((filePath) => {
-      // Strip fenced code blocks before scanning — links inside ``` are examples, not real links
+      // Strip fenced code blocks before scanning — links inside ``` are examples, not real links.
+      // First unwrap backticks INSIDE link text ([`x`](y) → [x](y)) so such links survive the
+      // inline-code strip below; otherwise a broken link with a backticked label escapes detection.
       const rawContent = fs.readFileSync(filePath, 'utf-8');
-      const content = rawContent.replace(/```[\s\S]*?```/g, '').replace(/`[^`]+`/g, '');
+      const content = rawContent
+        .replace(/```[\s\S]*?```/g, '')
+        .replace(/\[`([^`]+)`\]\(/g, '[$1](')
+        .replace(/`[^`]+`/g, '');
       const fileDir = path.dirname(filePath);
       let match;
       while ((match = linkRegex.exec(content)) !== null) {

@@ -34,6 +34,7 @@ This index guides AI agents and engineers through the modular template knowledge
 ### 4. Governance & Project Management
 
 * **[.agent/context/SECURITY.md](.agent/context/SECURITY.md)**: Security blueprints, trust boundaries, AI data privacy governance rules, Microsoft SDL phase mapping, banned API list. — **[Core]**
+* **[.agent/context/SECURITY_REVIEW.md](.agent/context/SECURITY_REVIEW.md)**: Actionable FAIL/PASS security review checklist (secrets, input, injection, authN/Z, disclosure, supply chain, data) — stack-neutral; run when touching security-sensitive code. — **[Core]**
 * **[.agent/context/THREAT_MODEL.md](.agent/context/THREAT_MODEL.md)**: STRIDE-based system threat catalog, vulnerability vectors, and security controls. — **[Core]**
 * **[.agent/context/BACKLOG.md](.agent/context/BACKLOG.md)**: Active backlog — Must Have, Should Have, Could Have items, Won't Have, Sprint History, DoD, and Velocity. — **[Core]**
 * **[.agent/context/DEPENDENCY_POLICY.md](.agent/context/DEPENDENCY_POLICY.md)**: Library selection guidelines, licensing audits, security scan thresholds, and Renovate/Dependabot policy. — **[Core]**
