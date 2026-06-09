@@ -1,4 +1,4 @@
-# Language Toolchains — start-project
+# Language Toolchains — [PROJECT_NAME]
 
 > Reference guide for compilers, interpreters, and package managers supported by this template.
 

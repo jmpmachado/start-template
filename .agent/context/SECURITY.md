@@ -1,4 +1,4 @@
-# Security Policy — start-project
+# Security Policy — [PROJECT_NAME]
 
 > Master security policy. Every engineer must read this before their first PR.
 > Fill in project-specific values in all `[placeholder]` sections.

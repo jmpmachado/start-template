@@ -1,4 +1,4 @@
-# Dependency Policy — start-project
+# Dependency Policy — [PROJECT_NAME]
 
 > Governs how dependencies are evaluated, introduced, updated, and retired.
 > Apply this policy before every `npm install` / `dotnet add package` equivalent.

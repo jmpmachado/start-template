@@ -1,4 +1,4 @@
-# Onboarding Guide — start-project
+# Onboarding Guide — [PROJECT_NAME]
 
 > For new engineers joining the project. Read in order — each section builds on the previous.
 > Estimated time: 2–4 hours for a complete first pass.
@@ -273,7 +273,7 @@ npm rebuild [module-name]
 
 Copy-paste this as the system prompt when starting a new agent session on this template:
 
-> You are working on `start-project` — a fresh project created from this engineering template.
+> You are working on `[PROJECT_NAME]` — a fresh project created from this engineering template.
 > Mandatory reads before any task:
 > 1. `AGENTS.md` — full knowledge base index and guard rules
 > 2. `CLAUDE.md` (or your agent contract file) — operating rules, modes, pre-commit gate

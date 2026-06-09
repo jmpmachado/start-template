@@ -1,4 +1,4 @@
-# Operational Runbook — start-project
+# Operational Runbook — [PROJECT_NAME]
 
 > Day-to-day operations reference. For incident response see `INCIDENT_RUNBOOK.md`.
 > Keep this document current — a stale runbook is more dangerous than no runbook.

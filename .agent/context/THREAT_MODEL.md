@@ -1,4 +1,4 @@
-# Threat Model — start-project
+# Threat Model — [PROJECT_NAME]
 
 > Standalone STRIDE threat model. Fill in per component as the system is built.
 > Update whenever the attack surface changes: new endpoint, new integration, new data type.

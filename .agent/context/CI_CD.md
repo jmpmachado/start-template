@@ -1,4 +1,4 @@
-# CI/CD Pipeline — start-project
+# CI/CD Pipeline — [PROJECT_NAME]
 
 > Template for continuous integration and delivery configuration.
 > Adapt stage names and commands to the project's actual toolchain.

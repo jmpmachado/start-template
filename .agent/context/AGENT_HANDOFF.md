@@ -1,4 +1,4 @@
-# Agent Handoff Protocol — start-project
+# Agent Handoff Protocol — [PROJECT_NAME]
 
 > Governs context transfer between AI agent sessions: same-agent session resets,
 > cross-agent handoffs (Claude → Codex, Claude → Copilot), and human-to-agent

@@ -1,4 +1,4 @@
-# Definition of Done — start-project
+# Definition of Done — [PROJECT_NAME]
 
 > The DoD is the team's shared contract for "complete." A task is not done until
 > every applicable item below is checked. No exceptions without explicit team approval.

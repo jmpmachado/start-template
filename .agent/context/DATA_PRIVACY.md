@@ -1,4 +1,4 @@
-# Data Privacy — start-project
+# Data Privacy — [PROJECT_NAME]
 
 > Guidelines on PII handling, data minimization, and regulatory compliance.
 

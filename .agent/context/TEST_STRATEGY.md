@@ -1,4 +1,4 @@
-# Test Strategy — start-project
+# Test Strategy — [PROJECT_NAME]
 
 > Authoritative test philosophy for this project.
 > Every engineer and AI agent must consult this before writing or reviewing tests.

@@ -1,4 +1,4 @@
-# Contributing Guide — start-project
+# Contributing Guide — [PROJECT_NAME]
 
 > This document defines the workflow for contributing to this project.
 > All contributors — including AI agents — must follow these rules.

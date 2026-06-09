@@ -1,6 +1,6 @@
-# Best Practices — start-project
+# Best Practices — [PROJECT_NAME]
 
-> To maintain start-project in a healthy paradigm over an expected useful life of 3–5 years,
+> To maintain [PROJECT_NAME] in a healthy paradigm over an expected useful life of 3–5 years,
 > follow the guidelines below. Adapt environment-specific sections to your actual stack.
 
 ---
