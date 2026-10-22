@@ -1,0 +1,10 @@
+# Keeps the pinned GitHub Actions current: Dependabot opens a pull request when a newer release exists,
+# and rewrites the commit SHA together with its version comment.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "ci"
