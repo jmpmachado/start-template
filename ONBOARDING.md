@@ -1,0 +1,281 @@
+# Onboarding Guide — [PROJECT_NAME]
+
+> For new engineers joining the project. Read in order — each section builds on the previous.
+> Estimated time: 2–4 hours for a complete first pass.
+
+---
+
+## 1. Before You Start
+
+### What you need
+
+> 📖 **Full install guide:** [TOOLING_SETUP.md](TOOLING_SETUP.md) — Node.js and .NET 9 with winget one-liners and troubleshooting.
+
+**Node.js tooling (governance, lint, tests) — mandatory:**
+
+| Tool | Minimum | Check | Install |
+| :--- | :--- | :--- | :--- |
+| Node.js | v24+ | `node --version` | `winget install --id OpenJS.NodeJS.LTS` |
+| npm | v10+ | `npm --version` | bundled with Node.js |
+| Git | 2.40+ | `git --version` | `winget install --id Git.Git` |
+| Editor | — | — | VS Code recommended |
+
+```powershell
+# Install Node.js if not present
+winget install --id OpenJS.NodeJS.LTS --accept-package-agreements
+# Open a new terminal, then verify:
+node --version   # v24+
+npm --version    # 10+
+```
+
+> Full guide (nvm, manual download, troubleshooting): [TOOLING_SETUP.md §1](TOOLING_SETUP.md)
+
+**Backend (.NET 9) — mandatory for backend work:**
+
+| Tool | Minimum | Check | Install |
+| :--- | :--- | :--- | :--- |
+| .NET 9 SDK | 9.0.x | `dotnet --version` | See [DOTNET_SETUP.md](DOTNET_SETUP.md) §2 |
+| VS2022 Build Tools | 17.8+ | `msbuild -version` | See [DOTNET_SETUP.md](DOTNET_SETUP.md) §1 |
+
+```powershell
+# VS2022 already installed? Add .NET 9 SDK only:
+winget install --id Microsoft.DotNet.SDK.9 --accept-package-agreements
+# Open a new terminal, then verify:
+dotnet --version   # 9.x.x
+```
+
+> Full guide (VS2022 Build Tools, manual download, VS Installer): [DOTNET_SETUP.md §2](DOTNET_SETUP.md)
+
+### Recommended editor setup
+
+- Install the `[language]` extension.
+- Enable "format on save" with the project's formatter config.
+- The project enforces code style via pre-commit hooks — they run automatically on `git commit`.
+
+---
+
+## 2. First-Time Setup
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/<your-org>/<your-project>.git
+cd <your-project>
+
+# 2. Copy environment template (never commit real values)
+cp .env.example .env
+# Fill in the required values — see .env.example comments
+
+# 3. Install Node.js tooling
+npm --prefix tooling install
+
+# 4. Run the Node.js test suite
+npm --prefix tooling test
+# Expected: Vitest suite passes
+
+# 4c. Build and test the .NET backend
+dotnet restore src/backend/backend.csproj
+dotnet build src/backend/backend.csproj
+dotnet test tests/backend/backend.tests.csproj
+# Expected: 1 passed, 0 failed
+
+# 5. Open the frontend (no build step needed)
+start src/frontend/index.html
+
+# 5b. Start the .NET backend API (optional)
+dotnet run --project src/backend/backend.csproj
+# Health: https://localhost:5001/health
+```
+
+> If any step fails, check [TROUBLESHOOTING](#9-troubleshooting) below before asking for help.
+
+---
+
+## 3. Repository Structure
+
+```
+[project-name]/
+├── docs/                 # Engineering documentation (security, architecture, runbooks, ...)
+├── .github/workflows/    # CI/CD pipeline definitions
+├── infra/                # Infrastructure scripts
+├── rfcs/                 # Design Docs and Architecture Decision Records
+├── src/
+│   ├── frontend/         # HTML5 + CSS + JS (open index.html in browser)
+│   │   ├── index.html
+│   │   ├── style.css
+│   │   └── app.js
+│   └── backend/          # .NET 8/9 Minimal API
+│       ├── Program.cs
+│       ├── backend.csproj
+│       └── appsettings.json
+└── tests/
+    ├── unit/             # Node.js vitest tests (governance)
+    ├── integration/      # Node.js integration tests
+    └── backend/          # .NET xUnit tests
+        ├── ApiTests.cs
+        └── backend.tests.csproj
+```
+
+---
+
+## 4. Knowledge Base Reading Order
+
+Read these documents before making your first PR:
+
+| Order | Document                                                                               | Why                                                                 |
+| :---: | :------------------------------------------------------------------------------------- | :------------------------------------------------------------------ |
+|   1   | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)                      | System design and layer model                                       |
+|   2   | [docs/SECURITY.md](docs/SECURITY.md)                              | Security policy — mandatory before touching auth or data            |
+|   3   | [docs/BEST_PRACTICES.md](docs/BEST_PRACTICES.md)                  | Coding rules and lifecycle patterns                                 |
+|   4   | [docs/PATTERNS.md](docs/PATTERNS.md)                              | Validated patterns and antipatterns                                 |
+|   5   | [CONTRIBUTING.md](CONTRIBUTING.md)                                                     | Branch, commit, and PR workflow                                     |
+|   6   | [docs/DATA_PRIVACY.md](docs/DATA_PRIVACY.md)                      | PII handling requirements — read before any feature that collects user data |
+|   7   | [docs/EXPERIMENTATION.md](docs/EXPERIMENTATION.md)                | A/B testing framework — read before designing any experiment or feature flag rollout |
+|   8   | [docs/CAPACITY_PLANNING.md](docs/CAPACITY_PLANNING.md)            | Infrastructure sizing — read before any launch planning or traffic peak preparation |
+
+---
+
+## 5. Development Workflow
+
+### Daily loop
+
+```
+1. git pull origin main              # start fresh
+2. git checkout -b feat/my-feature   # branch from main
+3. [write tests first — TDD]
+4. [implement]
+5. npm test                          # all tests must pass locally
+6. npm run lint                      # zero errors
+7. git commit -m "feat: ..."         # pre-commit hook runs automatically
+8. git push origin feat/my-feature
+9. Open a PR → CI runs → request review
+```
+
+### Commit message format
+
+```
+<type>(<scope>): <short description>
+```
+
+See [CONTRIBUTING.md §2](CONTRIBUTING.md) for the canonical type list and rules. Examples:
+
+- `feat: add password reset flow`
+- `fix: prevent IDOR on resource deletion`
+- `test: cover quota exhaustion state`
+- `security: enforce ownership check in update handler`
+
+---
+
+## 6. Running Tests
+
+| Command                      | What it runs                                   |
+| :--------------------------- | :--------------------------------------------- |
+| `npm test`                   | Full Node.js test suite (unit + integration)   |
+| `npm run test:watch`         | Unit tests in watch mode                       |
+| `npm run test:coverage`      | Coverage report                                |
+| `dotnet test tests/backend/backend.tests.csproj` | .NET xUnit backend tests |
+| `dotnet build src/backend/backend.csproj` | Build the backend          |
+| `dotnet run --project src/backend/backend.csproj` | Run the API locally on `https://localhost:5001` |
+
+**Coverage targets:** ≥ [80]% statements, ≥ [70]% branches.
+A PR that drops coverage below the target requires explicit approval.
+
+### Integration Test Bootstrap
+
+Integration tests require local services (PostgreSQL + Redis). Start them with Docker Compose:
+
+```bash
+# Start local services (db on :5432, cache on :6379)
+docker compose -f infra/docker-compose.yml up -d
+
+# Wait for services to be healthy (healthchecks are configured)
+docker compose -f infra/docker-compose.yml ps
+
+# Set environment variables
+export DATABASE_URL=postgres://appuser:localdevpassword@localhost:5432/appdb
+export REDIS_URL=redis://localhost:6379
+
+# Run integration tests
+npm run test:integration
+
+# Stop services when done
+docker compose -f infra/docker-compose.yml down
+```
+
+**Environment variables required by `tests/integration/`:**
+
+| Variable | Value for local dev | Description |
+| :------- | :------------------ | :---------- |
+| `DATABASE_URL` | `postgres://appuser:localdevpassword@localhost:5432/appdb` | Primary DB connection |
+| `REDIS_URL` | `redis://localhost:6379` | Cache connection |
+
+> See [DOTNET_SETUP.md §5](DOTNET_SETUP.md) for .NET-specific troubleshooting (PATH issues, SDK mismatch, port conflicts).
+
+---
+
+## 7. Making Your First PR
+
+Before opening a PR, verify:
+
+- [ ] All tests pass locally.
+- [ ] Linter passes with zero errors.
+- [ ] No secrets or credentials in the diff.
+- [ ] PR description explains _why_, not just _what_.
+
+---
+
+## 8. Key Contacts
+
+| Role      | Name / Handle | Contact           |
+| :-------- | :------------ | :---------------- |
+| Tech Lead | [name]        | [slack / email]   |
+| On-call   | [rotation]    | [pager / channel] |
+| Security  | [name / team] | [channel]         |
+
+---
+
+## 9. Troubleshooting
+
+### Tests fail on first run
+
+1. Verify local services are running: `docker compose ps`
+2. Check `.env` has all required variables from `.env.example`
+3. Check runtime version matches the requirement table above
+
+### Pre-commit hook fails
+
+1. Run `[npm run lint]` manually to see the full error
+2. Fix the reported issues
+3. Stage the fixes and try committing again
+
+### Port conflict on `dev` server
+
+Change the port in `.env`: `PORT=[another port]`
+
+### Native module binary mismatch
+
+If you see `not a valid executable` errors after `npm install`:
+
+```bash
+npm rebuild [module-name]
+```
+
+---
+
+## 10. Glossary
+
+Add a glossary at `docs/GLOSSARY.md` if the project needs one.
+
+Quick reference for the most common terms:
+
+| Term   | Meaning                                                     |
+| :----- | :---------------------------------------------------------- |
+| ADR    | Architecture Decision Record                                |
+| RFC    | Request for Comments (Design Doc proposal)                  |
+| SLO    | Service Level Objective                                     |
+| SLI    | Service Level Indicator                                     |
+| DoD    | Definition of Done                                          |
+| STRIDE | Spoofing, Tampering, Repudiation, Info Disclosure, DoS, EoP |
+| CWE    | Common Weakness Enumeration                                 |
+| DORA   | DevOps Research and Assessment metrics                      |
+| MoSCoW | Must / Should / Could / Won't prioritization                |
+| IDOR   | Insecure Direct Object Reference                            |

@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  web-tooling:
+    name: Web tooling
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: tooling/package-lock.json
+
+      - run: npm ci
+        working-directory: tooling
+
+      - run: npm run lint:all
+        working-directory: tooling
+
+      - run: npm test
+        working-directory: tooling
+
+  dotnet:
+    name: .NET 9
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '9.0.x'
+
+      - run: dotnet restore tests/backend/backend.tests.csproj
+      - run: dotnet build tests/backend/backend.tests.csproj --no-restore -c Release
+      - run: dotnet test tests/backend/backend.tests.csproj --no-build --no-restore -c Release

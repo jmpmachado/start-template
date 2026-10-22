@@ -1,0 +1,3 @@
+**/node_modules/**
+.git/**
+risk_report.md

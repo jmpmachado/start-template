@@ -1,0 +1,45 @@
+#!/usr/bin/env node
+// detect-stack.js — reads CONFIGURE.md and prints PROJECT_STACK value to stdout.
+// Used by local tooling to report the configured project stack.
+// Exit 0 always; unknown/absent stack defaults to "node".
+//
+// Usage (CI):
+//   stack=$(node scripts/detect-stack.js)
+//   echo "stack=$stack" >> $GITHUB_OUTPUT
+//
+// Usage (local):
+//   node scripts/detect-stack.js
+
+import { readFileSync, existsSync } from 'node:fs';
+import { resolve, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const CONFIGURE = resolve(ROOT, 'CONFIGURE.md');
+
+const VALID_STACKS = new Set(['node', 'dotnet', 'none']);
+const DEFAULT_STACK = 'dotnet';
+
+/**
+ * Reads CONFIGURE.md and returns the PROJECT_STACK value.
+ * @param {string} [configurePath] - Path to CONFIGURE.md (defaults to repo root).
+ * @returns {string} One of: 'node' | 'dotnet' | 'none'. Defaults to 'dotnet'.
+ */
+export function detectStack(configurePath = CONFIGURE) {
+  if (!existsSync(configurePath)) return DEFAULT_STACK;
+
+  const content = readFileSync(configurePath, 'utf8');
+  const match = content.match(/^PROJECT_STACK\s*=\s*(\S+)/m);
+  if (!match) return DEFAULT_STACK;
+
+  let value = match[1].trim().toLowerCase();
+  if (value === '.net') {
+    value = 'dotnet';
+  }
+  return VALID_STACKS.has(value) ? value : DEFAULT_STACK;
+}
+
+// Run as CLI
+if (process.argv[1] && resolve(process.argv[1]) === resolve(fileURLToPath(import.meta.url))) {
+  process.stdout.write(detectStack() + '\n');
+}

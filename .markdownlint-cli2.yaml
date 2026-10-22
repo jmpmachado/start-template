@@ -1,0 +1,8 @@
+globs:
+  - "**/*.md"
+ignores:
+  - "**/node_modules/**"
+  - ".git/**"
+  - "risk_report.md"
+config:
+  extends: ".markdownlint.jsonc"
